@@ -41,27 +41,35 @@ Inne polecenia: `npm run build` (produkcja), `npm run start` (serwer produkcyjny
 - Dostępność (nawigacja klawiaturą, kontrast, „pomiń do treści”, `prefers-reduced-motion`)
 - Optymalizacja obrazów (WebP/AVIF), responsywność, płynne animacje
 
-**Panel administracyjny — działający moduł wzorcowy:**
+**Panel administracyjny (`/admin`) — pełny CMS:**
 
-- Logowanie / wylogowanie (Supabase Auth), ochrona tras `/admin`
+- Logowanie / wylogowanie (Supabase Auth), ochrona tras `/admin` — wyłącznie dla kont wpisanych
+  do tabeli `public.admins` (patrz sekcja „Administratorzy” niżej)
 - Pulpit ze statystykami
-- **Konie — pełne zarządzanie (CRUD):** dodawanie, edycja, usuwanie, publikacja/szkic,
-  wyróżnianie, status, cena, kolejność, dane szczegółowe, rodowód, zdjęcia (z kolejnością),
-  filmy YouTube, pola SEO
+- **Konie — pełne zarządzanie (CRUD):** dane szczegółowe, rodowód, zdjęcia (wgrywanie bezpośrednio
+  z komputera, kolejność, zdjęcie główne, alt), **filmy YouTube** (dowolna liczba, link
+  youtube.com/youtu.be/Shorts, kategoria, tytuł, opis, widoczność, kolejność, podgląd), pola SEO
+- **Wydarzenia** — CRUD, okładka, galeria, filmy, powiązane konie, publikacja
+- **Galeria** — albumy i zdjęcia w albumach (CRUD, wgrywanie, kolejność)
+- **Oferta** — pozycje oferty, zdjęcie, punkty/zalety, aktywność
+- **Nasza stajnia** — opis stajni oraz oś czasu (historia)
+- **Strona główna** — nagłówek hero, wstęp, statystyki, sekcja „o stajni”, wybór wyróżnionych
+  koni/wydarzeń/albumów, sekcja filmu, kolejność i widoczność sekcji
+- **Ustawienia** — telefon, e-mail, adres, mapa Google, godziny otwarcia, social media, SEO domyślne, stopka
 - **Skrzynka wiadomości:** odczyt zgłoszeń z formularzy, zmiana statusu, notatki, odpowiedź, usuwanie
 
+Każdy zapis odświeża natychmiast odpowiednie strony publiczne (rewalidacja cache).
+
 **Baza danych:** kompletny schemat wszystkich sekcji (konie, wydarzenia, galerie, oferta,
-oś czasu, ustawienia, treści stron, wiadomości) z zabezpieczeniami RLS i bucketem na pliki.
+oś czasu, ustawienia, treści stron, wiadomości, administratorzy) z zabezpieczeniami RLS i
+bucketem na pliki.
 
-## Co dalej (kolejny etap)
+## Administratorzy
 
-Moduły **Wydarzenia, Galerie, Oferta, treści Strony głównej i Ustawienia** działają obecnie na
-danych przykładowych i **nie mają jeszcze edycji w panelu** — ich tabele są już w bazie, a
-strona publiczna je wyświetla. Dodanie ich do panelu polega na powtórzeniu wzorca z modułu
-**Konie** (lista + formularz + akcje zapisu). Podobnie: bezpośrednie wgrywanie zdjęć do Supabase
-Storage z panelu (obecnie podaje się URL/ścieżkę) oraz przeciąganie „przeciągnij, by zmienić
-kolejność”. Panel nie zawiera „martwych przycisków” — widoczne są tylko działające funkcje,
-a przyszłe moduły oznaczono jako „Wkrótce”.
+Dostęp do panelu (odczyt i zapis szkiców) mają wyłącznie konta wpisane do tabeli
+`public.admins` — zwykłe zalogowanie do Supabase Auth **nie** wystarcza. Zobacz
+**[`supabase/migrations/0001_admin_cms.sql`](./supabase/migrations/0001_admin_cms.sql)**
+oraz sekcję „Dodawanie administratora” w [`supabase/README.md`](./supabase/README.md).
 
 ---
 
@@ -97,8 +105,10 @@ Aplikację można wdrożyć na dowolnym hostingu wspierającym Next.js 14.
 ## Zdjęcia
 
 - Zdjęcia przykładowe leżą w `public/images/full` (duże) i `public/images/thumbs` (miniatury), format **WebP**.
-- Nowe zdjęcia: wgraj do Supabase Storage (bucket `media`) i wklej publiczny URL w edytorze konia,
-  albo dołóż plik do `public/images/...` i podaj ścieżkę (np. `/images/full/nazwa.webp`).
+- Nowe zdjęcia: wgraj bezpośrednio w panelu (`/admin`) — każdy edytor (koń, wydarzenie, album,
+  oferta, strona główna) ma przycisk „Dodaj zdjęcia” / „Wgraj zdjęcie”, który zapisuje plik od
+  razu w Supabase Storage (bucket `media`) i pokazuje pasek postępu. Wklejanie URL-i nie jest
+  już potrzebne.
 - **Prywatność:** jedno z dostarczonych zdjęć (z wyraźnie widoczną osobą — dzieckiem) **nie zostało
   użyte**. Zanim opublikujesz zdjęcia z rozpoznawalnymi osobami, zadbaj o ich zgodę (a w przypadku
   dzieci — zgodę opiekunów). To ważne ze względów prawnych (RODO/wizerunek).

@@ -1,5 +1,6 @@
 import { SITE } from '@/lib/constants';
 import { buildMetadata } from '@/lib/seo';
+import { getSiteSettings } from '@/lib/data/queries';
 import { Breadcrumbs } from '@/components/ui/Primitives';
 
 export const metadata = buildMetadata({
@@ -8,7 +9,10 @@ export const metadata = buildMetadata({
   path: '/polityka-prywatnosci',
 });
 
-export default function PrivacyPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function PrivacyPage() {
+  const settings = await getSiteSettings();
   return (
     <article className="bg-ivory pt-[76px]">
       <div className="border-b border-navy/10 bg-cream">
@@ -28,7 +32,7 @@ export default function PrivacyPage() {
           <div className="prose-lux space-y-6">
             <section>
               <h2 className="font-display text-2xl text-navy">1. Administrator danych</h2>
-              <p>Administratorem danych jest {SITE.legalName}. Kontakt: {SITE.email}, tel. {SITE.phone}.</p>
+              <p>Administratorem danych jest {SITE.legalName}. Kontakt: {settings.email}, tel. {settings.phone}.</p>
             </section>
             <section>
               <h2 className="font-display text-2xl text-navy">2. Zakres i cel przetwarzania</h2>

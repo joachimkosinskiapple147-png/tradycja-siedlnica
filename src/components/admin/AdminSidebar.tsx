@@ -10,10 +10,14 @@ import { signOut } from '@/actions/admin';
 const LINKS = [
   { href: '/admin', label: 'Pulpit', exact: true },
   { href: '/admin/konie', label: 'Konie' },
+  { href: '/admin/wydarzenia', label: 'Wydarzenia' },
+  { href: '/admin/galeria', label: 'Galeria' },
+  { href: '/admin/oferta', label: 'Oferta' },
+  { href: '/admin/nasza-stajnia', label: 'Nasza stajnia' },
+  { href: '/admin/strona-glowna', label: 'Strona główna' },
+  { href: '/admin/ustawienia', label: 'Ustawienia' },
   { href: '/admin/wiadomosci', label: 'Wiadomości' },
 ];
-
-const PHASE2 = ['Wydarzenia', 'Galerie', 'Oferta', 'Strona główna', 'Ustawienia'];
 
 export default function AdminSidebar({ email, unread }: { email?: string; unread?: number }) {
   const pathname = usePathname();
@@ -69,18 +73,6 @@ export default function AdminSidebar({ email, unread }: { email?: string; unread
                 </li>
               ))}
             </ul>
-
-            <div className="mt-6 px-3">
-              <div className="text-[0.62rem] uppercase tracking-eyebrow text-ivory/40">Wkrótce</div>
-              <ul className="mt-3 space-y-1.5">
-                {PHASE2.map((p) => (
-                  <li key={p} className="flex items-center gap-2 text-sm text-ivory/35">
-                    <span className="h-1 w-1 rounded-full bg-ivory/25" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </nav>
 
           <div className="border-t border-ivory/12 px-4 py-4">

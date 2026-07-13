@@ -12,11 +12,22 @@ export interface HorseImage {
   is_cover?: boolean;
 }
 
+export type VideoCategory =
+  | 'przejazd'
+  | 'trening'
+  | 'skoki'
+  | 'ujezdzenie'
+  | 'zawody'
+  | 'prezentacja'
+  | 'inne';
+
 export interface HorseVideo {
   id: string;
   youtube_id: string;
   title: string;
   description?: string;
+  category?: VideoCategory;
+  publish: boolean;
   position: number;
 }
 
@@ -75,6 +86,7 @@ export interface EventItem {
   videos: HorseVideo[];
   horse_slugs: string[];
   publish: PublishStatus;
+  position: number;
 }
 
 export interface GalleryImage {
@@ -117,6 +129,78 @@ export interface TimelineEntry {
   title: string;
   description: string;
   image?: HorseImage;
+  position: number;
+}
+
+export interface HomeStat {
+  number: string;
+  label: string;
+}
+
+export interface HomeSection {
+  key:
+    | 'hero'
+    | 'intro'
+    | 'horses'
+    | 'about'
+    | 'offers'
+    | 'events'
+    | 'gallery'
+    | 'video'
+    | 'contact_cta';
+  visible: boolean;
+}
+
+export interface HomeContent {
+  hero_eyebrow: string;
+  hero_heading: string;
+  hero_description: string;
+  hero_image_url: string;
+  hero_image_alt: string;
+  hero_button1_label: string;
+  hero_button1_href: string;
+  hero_button2_label: string;
+  hero_button2_href: string;
+  intro_eyebrow: string;
+  intro_text: string;
+  stats: HomeStat[];
+  about_eyebrow: string;
+  about_heading: string;
+  about_text: string;
+  about_image_url: string;
+  about_image_alt: string;
+  video_horse_slug: string | null;
+  cta_heading: string;
+  featured_horse_ids: string[];
+  featured_event_ids: string[];
+  featured_album_ids: string[];
+  sections: HomeSection[];
+}
+
+export interface AboutContent {
+  intro_text: string;
+}
+
+export interface OpeningHoursRow {
+  day: string;
+  hours: string;
+}
+
+export interface SiteSettings {
+  phone: string;
+  phone_href: string;
+  email: string;
+  address_label: string;
+  address_full: string;
+  map_query: string;
+  hours: OpeningHoursRow[];
+  hours_note: string;
+  social_facebook: string;
+  social_instagram: string;
+  social_youtube: string;
+  seo_title: string;
+  seo_description: string;
+  footer_text: string;
 }
 
 export interface ContactMessage {

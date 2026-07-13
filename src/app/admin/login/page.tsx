@@ -19,7 +19,9 @@ function LoginInner() {
   const params = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    params.get('blad') === 'brak_uprawnien' ? 'To konto nie ma uprawnień administratora.' : ''
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {

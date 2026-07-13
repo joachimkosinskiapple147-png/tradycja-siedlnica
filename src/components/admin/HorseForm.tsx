@@ -3,15 +3,23 @@
 import { useState } from 'react';
 import { useFormState } from 'react-dom';
 import Link from 'next/link';
-import Image from 'next/image';
-import type { Horse } from '@/lib/types';
-import { HORSE_STATUS, SEX_LABEL } from '@/lib/constants';
+import type { Horse, VideoCategory } from '@/lib/types';
+import { HORSE_STATUS, SEX_LABEL, VIDEO_CATEGORY_LABEL, VIDEO_CATEGORIES } from '@/lib/constants';
 import { slugify } from '@/lib/utils';
 import { saveHorse } from '@/actions/admin';
 import { SubmitButton } from '@/components/site/FormBits';
+import ImageUploader, { type ImageRow } from '@/components/admin/ImageUploader';
+import VideoEmbed from '@/components/site/VideoEmbed';
+import { extractYouTubeId } from '@/lib/youtube';
 
-type ImgRow = { url: string; thumb: string; alt: string; caption: string };
-type VidRow = { id: string; title: string };
+type VidRow = {
+  youtube_id: string;
+  input: string;
+  title: string;
+  description: string;
+  category: VideoCategory | '';
+  publish: boolean;
+};
 
 const inputCls =
   'w-full border border-navy/20 bg-white px-3 py-2.5 text-sm text-navy outline-none focus:border-brass';
@@ -40,26 +48,55 @@ export default function HorseForm({ horse }: { horse?: Horse }) {
   const [slug, setSlug] = useState(horse?.slug ?? '');
   const [slugTouched, setSlugTouched] = useState(Boolean(horse?.slug));
 
-  const [images, setImages] = useState<ImgRow[]>(
-    horse?.images.length
-      ? horse.images.map((i) => ({ url: i.url, thumb: i.thumb ?? '', alt: i.alt ?? '', caption: i.caption ?? '' }))
-      : [{ url: '', thumb: '', alt: '', caption: '' }]
+  const [images, setImages] = useState<ImageRow[]>(
+    horse?.images.map((i) => ({ url: i.url, alt: i.alt ?? '', caption: i.caption ?? '' })) ?? []
   );
   const [videos, setVideos] = useState<VidRow[]>(
-    horse?.videos.length ? horse.videos.map((v) => ({ id: v.youtube_id, title: v.title ?? '' })) : []
+    horse?.videos.map((v) => ({
+      youtube_id: v.youtube_id,
+      input: v.youtube_id,
+      title: v.title ?? '',
+      description: v.description ?? '',
+      category: v.category ?? '',
+      publish: v.publish,
+    })) ?? []
   );
 
-  const moveImg = (i: number, dir: number) => {
-    const next = [...images];
+  const moveVideo = (i: number, dir: number) => {
+    const next = [...videos];
     const j = i + dir;
     if (j < 0 || j >= next.length) return;
     [next[i], next[j]] = [next[j], next[i]];
-    setImages(next);
+    setVideos(next);
+  };
+
+  const updateVideoInput = (i: number, input: string) => {
+    const id = extractYouTubeId(input) ?? '';
+    setVideos(videos.map((r, k) => (k === i ? { ...r, input, youtube_id: id } : r)));
   };
 
   return (
     <form action={action} className="space-y-6 pb-24">
       {horse?.id && <input type="hidden" name="id" value={horse.id} />}
+
+      {/* Zdjęcia — wysyłane jako ukryte pola zgodne z akcją zapisu */}
+      {images.map((img, i) => (
+        <span key={i}>
+          <input type="hidden" name="image_url" value={img.url} />
+          <input type="hidden" name="image_alt" value={img.alt} />
+          <input type="hidden" name="image_caption" value={img.caption ?? ''} />
+        </span>
+      ))}
+      {/* Filmy — ukryte pola */}
+      {videos.map((v, i) => (
+        <span key={i}>
+          <input type="hidden" name="video_id" value={v.youtube_id} />
+          <input type="hidden" name="video_title" value={v.title} />
+          <input type="hidden" name="video_description" value={v.description} />
+          <input type="hidden" name="video_category" value={v.category} />
+          <input type="hidden" name="video_publish" value={v.publish ? 'true' : 'false'} />
+        </span>
+      ))}
 
       {state.message && (
         <p className={`border px-4 py-3 text-sm ${state.ok ? 'border-forest/40 bg-forest/5 text-forest' : 'border-red-300 bg-red-50 text-red-700'}`}>
@@ -147,85 +184,93 @@ export default function HorseForm({ horse }: { horse?: Horse }) {
 
           <Section title="Zdjęcia">
             <p className="text-[0.8rem] text-charcoal/60">
-              Pierwsze zdjęcie jest zdjęciem głównym (okładką). Wpisz adres URL zdjęcia lub ścieżkę w
-              serwisie (np. <code>/images/full/cyprian-portret.webp</code>). Bezpośrednie wgrywanie plików do
-              Supabase Storage dodamy w kolejnym etapie.
+              Wgraj jedno lub wiele zdjęć bezpośrednio z komputera. Pierwsze zdjęcie na liście jest
+              zdjęciem głównym (okładką) — użyj strzałek lub „Ustaw jako główne”, aby zmienić kolejność.
             </p>
-            <div className="space-y-3">
-              {images.map((img, i) => (
-                <div key={i} className="border border-navy/12 bg-cream p-3">
-                  <div className="flex items-start gap-3">
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden border border-navy/10 bg-beige-soft">
-                      {img.url ? <Image src={img.url} alt="" fill sizes="64px" className="object-cover" /> : null}
-                    </div>
-                    <div className="grid flex-1 gap-2 sm:grid-cols-2">
-                      <input
-                        name="image_url"
-                        value={img.url}
-                        onChange={(e) => setImages(images.map((r, k) => (k === i ? { ...r, url: e.target.value } : r)))}
-                        placeholder="URL zdjęcia *"
-                        className={inputCls}
-                      />
-                      <input
-                        name="image_thumb"
-                        value={img.thumb}
-                        onChange={(e) => setImages(images.map((r, k) => (k === i ? { ...r, thumb: e.target.value } : r)))}
-                        placeholder="URL miniatury (opcjonalnie)"
-                        className={inputCls}
-                      />
-                      <input
-                        name="image_alt"
-                        value={img.alt}
-                        onChange={(e) => setImages(images.map((r, k) => (k === i ? { ...r, alt: e.target.value } : r)))}
-                        placeholder="Opis alternatywny (alt)"
-                        className={inputCls}
-                      />
-                      <input
-                        name="image_caption"
-                        value={img.caption}
-                        onChange={(e) => setImages(images.map((r, k) => (k === i ? { ...r, caption: e.target.value } : r)))}
-                        placeholder="Podpis (opcjonalnie)"
-                        className={inputCls}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <button type="button" onClick={() => moveImg(i, -1)} aria-label="W górę" className="rounded-sm border border-navy/15 px-2 py-1 text-xs hover:bg-ivory">↑</button>
-                      <button type="button" onClick={() => moveImg(i, 1)} aria-label="W dół" className="rounded-sm border border-navy/15 px-2 py-1 text-xs hover:bg-ivory">↓</button>
-                      <button type="button" onClick={() => setImages(images.filter((_, k) => k !== i))} aria-label="Usuń" className="rounded-sm border border-red-300 px-2 py-1 text-xs text-red-600 hover:bg-red-50">×</button>
-                    </div>
-                  </div>
-                  {i === 0 && <span className="mt-2 inline-block text-[0.68rem] uppercase tracking-wide2 text-brass-deep">Zdjęcie główne</span>}
-                </div>
-              ))}
-            </div>
-            <button type="button" onClick={() => setImages([...images, { url: '', thumb: '', alt: '', caption: '' }])} className="btn-ghost">
-              + Dodaj zdjęcie
-            </button>
+            <ImageUploader images={images} onChange={setImages} folder={`horses/${slug || 'nowy'}`} />
           </Section>
 
-          <Section title="Filmy (YouTube)">
-            <div className="space-y-3">
-              {videos.map((v, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <input
-                    name="video_id"
-                    value={v.id}
-                    onChange={(e) => setVideos(videos.map((r, k) => (k === i ? { ...r, id: e.target.value } : r)))}
-                    placeholder="Link lub ID filmu YouTube"
-                    className={inputCls}
-                  />
-                  <input
-                    name="video_title"
-                    value={v.title}
-                    onChange={(e) => setVideos(videos.map((r, k) => (k === i ? { ...r, title: e.target.value } : r)))}
-                    placeholder="Tytuł"
-                    className={inputCls}
-                  />
-                  <button type="button" onClick={() => setVideos(videos.filter((_, k) => k !== i))} aria-label="Usuń film" className="shrink-0 rounded-sm border border-red-300 px-2.5 py-2 text-xs text-red-600 hover:bg-red-50">×</button>
-                </div>
-              ))}
+          <Section title="Filmy z YouTube">
+            <p className="text-[0.8rem] text-charcoal/60">
+              Wklej dowolny link YouTube (youtube.com, youtu.be lub Shorts) — ID filmu zostanie
+              rozpoznane automatycznie. Filmy oznaczone jako „Ukryty” nie pojawią się na stronie publicznej.
+            </p>
+            <div className="space-y-4">
+              {videos.map((v, i) => {
+                const preview = v.youtube_id;
+                return (
+                  <div key={i} className="border border-navy/12 bg-cream p-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <L label="Link lub ID filmu *">
+                        <input
+                          value={v.input}
+                          onChange={(e) => updateVideoInput(i, e.target.value)}
+                          placeholder="https://youtu.be/..."
+                          className={inputCls}
+                        />
+                        {v.input && !v.youtube_id && (
+                          <span className="mt-1 block text-[0.72rem] text-red-600">Nie rozpoznano ID filmu — sprawdź link.</span>
+                        )}
+                      </L>
+                      <L label="Kategoria">
+                        <select
+                          value={v.category}
+                          onChange={(e) => setVideos(videos.map((r, k) => (k === i ? { ...r, category: e.target.value as VideoCategory } : r)))}
+                          className={inputCls}
+                        >
+                          <option value="">Bez kategorii</option>
+                          {VIDEO_CATEGORIES.map((c) => (
+                            <option key={c} value={c}>{VIDEO_CATEGORY_LABEL[c]}</option>
+                          ))}
+                        </select>
+                      </L>
+                      <L label="Tytuł (opcjonalnie)">
+                        <input
+                          value={v.title}
+                          onChange={(e) => setVideos(videos.map((r, k) => (k === i ? { ...r, title: e.target.value } : r)))}
+                          className={inputCls}
+                        />
+                      </L>
+                      <L label="Opis (opcjonalnie)">
+                        <input
+                          value={v.description}
+                          onChange={(e) => setVideos(videos.map((r, k) => (k === i ? { ...r, description: e.target.value } : r)))}
+                          className={inputCls}
+                        />
+                      </L>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                      <label className="flex items-center gap-2 text-sm text-charcoal/80">
+                        <input
+                          type="checkbox"
+                          checked={v.publish}
+                          onChange={(e) => setVideos(videos.map((r, k) => (k === i ? { ...r, publish: e.target.checked } : r)))}
+                          className="h-4 w-4 accent-forest"
+                        />
+                        Widoczny publicznie
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => moveVideo(i, -1)} className="rounded-sm border border-navy/15 px-2 py-1 text-xs hover:bg-ivory">↑</button>
+                        <button type="button" onClick={() => moveVideo(i, 1)} className="rounded-sm border border-navy/15 px-2 py-1 text-xs hover:bg-ivory">↓</button>
+                        <button type="button" onClick={() => setVideos(videos.filter((_, k) => k !== i))} className="rounded-sm border border-red-300 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">Usuń</button>
+                      </div>
+                    </div>
+
+                    {preview && (
+                      <div className="mt-4 max-w-sm">
+                        <VideoEmbed video={{ id: preview, youtube_id: preview, title: v.title || 'Podgląd', description: v.description, publish: true, position: i }} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <button type="button" onClick={() => setVideos([...videos, { id: '', title: '' }])} className="btn-ghost">
+            <button
+              type="button"
+              onClick={() => setVideos([...videos, { youtube_id: '', input: '', title: '', description: '', category: '', publish: true }])}
+              className="btn-ghost"
+            >
               + Dodaj film
             </button>
           </Section>
@@ -274,6 +319,12 @@ export default function HorseForm({ horse }: { horse?: Horse }) {
                 Wyróżnij na stronie głównej
               </label>
             </Section>
+
+            {horse && (
+              <Link href={`/konie/${horse.slug}`} target="_blank" className="btn-ghost block text-center">
+                Podgląd na stronie
+              </Link>
+            )}
 
             <div className="flex flex-col gap-3">
               <SubmitButton label={horse ? 'Zapisz zmiany' : 'Utwórz konia'} />

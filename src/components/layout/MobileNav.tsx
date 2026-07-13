@@ -2,10 +2,20 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { NAV, SITE } from '@/lib/constants';
+import { NAV } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-export default function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function MobileNav({
+  open,
+  onClose,
+  phone,
+  phoneHref,
+}: {
+  open: boolean;
+  onClose: () => void;
+  phone: string;
+  phoneHref: string;
+}) {
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -81,9 +91,9 @@ export default function MobileNav({ open, onClose }: { open: boolean; onClose: (
           <Link href="/konie" onClick={onClose} className="btn-brass w-full">
             Konie na sprzedaż
           </Link>
-          <a href={`tel:${SITE.phoneHref}`} className="mt-3 block text-center text-ivory/80">
+          <a href={`tel:${phoneHref}`} className="mt-3 block text-center text-ivory/80">
             <span className="text-[0.7rem] uppercase tracking-eyebrow text-brass-soft">Telefon</span>
-            <span className="mt-1 block font-display text-2xl">{SITE.phone}</span>
+            <span className="mt-1 block font-display text-2xl">{phone}</span>
           </a>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { slugify } from '@/lib/utils';
+import { extractYouTubeId } from '@/lib/youtube';
 
 async function requireUser() {
   const supabase = createClient();
@@ -102,13 +103,11 @@ export async function saveHorse(_prev: ActionResult, fd: FormData): Promise<Acti
     const urls = fd.getAll('image_url').map(String).map((s) => s.trim()).filter(Boolean);
     const alts = fd.getAll('image_alt').map(String);
     const caps = fd.getAll('image_caption').map(String);
-    const thumbs = fd.getAll('image_thumb').map(String);
     await supabase.from('horse_images').delete().eq('horse_id', horseId);
     if (urls.length) {
       const imgRows = urls.map((url, i) => ({
         horse_id: horseId,
         url,
-        thumb: thumbs[i]?.trim() || null,
         alt: alts[i]?.trim() || name,
         caption: caps[i]?.trim() || null,
         position: i,
@@ -121,15 +120,22 @@ export async function saveHorse(_prev: ActionResult, fd: FormData): Promise<Acti
     // Filmy YouTube
     const vids = fd.getAll('video_id').map(String).map((s) => s.trim()).filter(Boolean);
     const vtitles = fd.getAll('video_title').map(String);
+    const vdescs = fd.getAll('video_description').map(String);
+    const vcats = fd.getAll('video_category').map(String);
+    const vpubs = fd.getAll('video_publish').map(String);
     await supabase.from('horse_videos').delete().eq('horse_id', horseId);
     if (vids.length) {
-      const vidRows = vids.map((youtube_id, i) => ({
+      const vidRows = vids.map((raw, i) => ({
         horse_id: horseId,
-        youtube_id: extractYouTubeId(youtube_id),
-        title: vtitles[i]?.trim() || 'Film',
+        youtube_id: extractYouTubeId(raw) ?? raw,
+        title: vtitles[i]?.trim() || null,
+        description: vdescs[i]?.trim() || null,
+        category: vcats[i]?.trim() || null,
+        publish: vpubs[i] !== 'false',
         position: i,
       }));
-      await supabase.from('horse_videos').insert(vidRows);
+      const { error } = await supabase.from('horse_videos').insert(vidRows);
+      if (error) throw error;
     }
   } catch (e) {
     console.error('[saveHorse]', e);
@@ -178,9 +184,4 @@ export async function deleteMessage(id: string): Promise<void> {
   const supabase = await requireUser();
   await supabase.from('contact_messages').delete().eq('id', id);
   revalidatePath('/admin/wiadomosci');
-}
-
-function extractYouTubeId(input: string): string {
-  const m = input.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
-  return m ? m[1] : input;
 }

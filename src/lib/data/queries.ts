@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
-import type { Album, EventItem, Horse, Offer, TimelineEntry } from '@/lib/types';
+import type { Album, AboutContent, EventItem, HomeContent, Horse, Offer, SiteSettings, TimelineEntry } from '@/lib/types';
 import {
   seedAlbums,
   seedEvents,
@@ -8,21 +8,25 @@ import {
   seedOffers,
   seedTimeline,
 } from './seed';
+import {
+  DEFAULT_ABOUT_CONTENT,
+  DEFAULT_HOME_CONTENT,
+  DEFAULT_SITE_SETTINGS,
+  mergeAboutContent,
+  mergeHomeContent,
+  mergeSiteSettings,
+} from './defaults';
 import { isUpcoming } from '@/lib/utils';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Warstwa dostępu do danych.
 //
-//  KONIE są odczytywane z bazy Supabase, gdy jest skonfigurowana (patrz README
-//  → sekcja konfiguracji + supabase/seed.sql). W przeciwnym razie — i przy każdym
-//  błędzie połączenia — używane są dane przykładowe z seed.ts, dzięki czemu strona
-//  zawsze się renderuje.
-//
-//  WYDARZENIA / GALERIE / OFERTA / OŚ CZASU w tej wersji korzystają z danych
-//  przykładowych. Ich moduły w panelu administratora oraz odczyt z bazy powstają
-//  w kolejnym etapie i wykorzystują dokładnie ten sam wzorzec, co konie
-//  (patrz komentarze poniżej i README → „Co dalej”).
+//  Wszystkie moduły czytają z Supabase, gdy baza jest skonfigurowana — w
+//  przeciwnym razie (lub przy błędzie połączenia) korzystają z danych
+//  przykładowych z seed.ts, dzięki czemu strona zawsze się renderuje.
 // ─────────────────────────────────────────────────────────────────────────────
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type HorseFilters = {
   status?: string;
@@ -38,7 +42,6 @@ type HorseFilters = {
 const HORSE_SELECT =
   '*, horse_images(*), horse_videos(*), horse_pedigree(*)';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 function mapHorseRow(row: any): Horse {
   const images = (row.horse_images ?? [])
     .map((i: any) => ({
@@ -58,6 +61,8 @@ function mapHorseRow(row: any): Horse {
       youtube_id: v.youtube_id,
       title: v.title ?? '',
       description: v.description ?? undefined,
+      category: v.category ?? undefined,
+      publish: v.publish ?? true,
       position: v.position ?? 0,
     }))
     .sort((a: any, b: any) => a.position - b.position);
@@ -106,7 +111,6 @@ function mapHorseRow(row: any): Horse {
     updated_at: row.updated_at ?? undefined,
   };
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 function applyHorseFilters(list: Horse[], f: HorseFilters): Horse[] {
   let out = list;
@@ -149,8 +153,13 @@ export async function getHorses(filters: HorseFilters = {}): Promise<Horse[]> {
   return applyHorseFilters(seedHorses, filters);
 }
 
-export async function getFeaturedHorses(limit = 6): Promise<Horse[]> {
+export async function getFeaturedHorses(limit = 6, ids?: string[]): Promise<Horse[]> {
   const all = await getHorses();
+  if (ids && ids.length) {
+    const bySlugOrId = new Map(all.map((h) => [h.id, h] as const));
+    const chosen = ids.map((id) => bySlugOrId.get(id)).filter((h): h is Horse => Boolean(h));
+    if (chosen.length) return chosen.slice(0, limit);
+  }
   const featured = all.filter((h) => h.featured && h.status !== 'sprzedany');
   const base = featured.length ? featured : all.filter((h) => h.status === 'na_sprzedaz');
   return base.slice(0, limit);
@@ -197,57 +206,6 @@ export function getHorseFilterOptions(list: Horse[]) {
   return { breeds, disciplines };
 }
 
-// ── Wydarzenia (dane przykładowe — moduł DB w kolejnym etapie) ────────────────
-export async function getEvents(): Promise<EventItem[]> {
-  return seedEvents.filter((e) => e.publish === 'opublikowany');
-}
-export async function getUpcomingEvents(): Promise<EventItem[]> {
-  return (await getEvents()).filter((e) => isUpcoming(e.date)).sort((a, b) => a.date.localeCompare(b.date));
-}
-export async function getPastEvents(): Promise<EventItem[]> {
-  return (await getEvents()).filter((e) => !isUpcoming(e.date)).sort((a, b) => b.date.localeCompare(a.date));
-}
-export async function getEventBySlug(slug: string): Promise<EventItem | null> {
-  return seedEvents.find((e) => e.slug === slug) ?? null;
-}
-
-// ── Galeria ───────────────────────────────────────────────────────────────────
-export async function getAlbums(): Promise<Album[]> {
-  return seedAlbums
-    .filter((a) => a.publish === 'opublikowany')
-    .sort((a, b) => a.position - b.position);
-}
-export async function getAlbumBySlug(slug: string): Promise<Album | null> {
-  return seedAlbums.find((a) => a.slug === slug) ?? null;
-}
-
-// ── Oferta ────────────────────────────────────────────────────────────────────
-export async function getOffers(): Promise<Offer[]> {
-  return seedOffers.filter((o) => o.active).sort((a, b) => a.position - b.position);
-}
-export async function getOfferBySlug(slug: string): Promise<Offer | null> {
-  return seedOffers.find((o) => o.slug === slug) ?? null;
-}
-
-// ── Oś czasu ──────────────────────────────────────────────────────────────────
-export async function getTimeline(): Promise<TimelineEntry[]> {
-  return seedTimeline;
-}
-
-// ── Statystyki panelu ─────────────────────────────────────────────────────────
-export async function getDashboardStats() {
-  const horses = await getHorses({ includeUnpublished: true });
-  const events = seedEvents;
-  const albums = seedAlbums;
-  return {
-    horsesTotal: horses.length,
-    horsesForSale: horses.filter((h) => h.status === 'na_sprzedaz').length,
-    horsesSold: horses.filter((h) => h.status === 'sprzedany').length,
-    events: events.length,
-    albums: albums.length,
-  };
-}
-
 // ── Panel: koń po ID (z szkicami) ─────────────────────────────────────────────
 export async function getHorseById(id: string): Promise<Horse | null> {
   if (!isSupabaseConfigured) {
@@ -262,6 +220,308 @@ export async function getHorseById(id: string): Promise<Horse | null> {
     console.error('[queries.getHorseById]', e);
     return null;
   }
+}
+
+// ============================================================================
+//  WYDARZENIA
+// ============================================================================
+const EVENT_SELECT = '*, event_images(*), event_videos(*), event_horses(horse_id)';
+
+function mapEventRow(row: any): EventItem {
+  const images = (row.event_images ?? [])
+    .map((i: any) => ({ id: i.id, url: i.url, thumb: i.thumb ?? undefined, alt: i.alt ?? '', position: i.position ?? 0 }))
+    .sort((a: any, b: any) => a.position - b.position);
+  const videos = (row.event_videos ?? [])
+    .map((v: any) => ({
+      id: v.id,
+      youtube_id: v.youtube_id,
+      title: v.title ?? '',
+      publish: true,
+      position: v.position ?? 0,
+    }))
+    .sort((a: any, b: any) => a.position - b.position);
+  const cover = row.cover_url
+    ? { id: `${row.id}-cover`, url: row.cover_url, alt: row.cover_alt ?? row.title, position: 0 }
+    : images[0] ?? { id: `${row.id}-cover`, url: '/images/full/hero.webp', alt: row.title, position: 0 };
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    category: row.category ?? '',
+    date: row.date,
+    location: row.location ?? undefined,
+    cover,
+    excerpt: row.excerpt ?? '',
+    body: row.body ?? undefined,
+    results: row.results ?? undefined,
+    gallery: images,
+    videos,
+    horse_slugs: (row.event_horses ?? []).map((h: any) => h.horse_id),
+    publish: row.publish,
+    position: row.position ?? 0,
+  };
+}
+
+export async function getEvents(opts: { includeUnpublished?: boolean } = {}): Promise<EventItem[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      let query = supabase.from('events').select(EVENT_SELECT);
+      if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
+      const { data, error } = await query.order('date', { ascending: false });
+      if (error) throw error;
+      const mapped = (data ?? []).map(mapEventRow);
+      // event_horses.horse_id trzeba zamienić na slug
+      const allHorses = await getHorses({ includeUnpublished: true });
+      const byId = new Map(allHorses.map((h) => [h.id, h.slug]));
+      return mapped.map((e) => ({ ...e, horse_slugs: e.horse_slugs.map((id) => byId.get(id) ?? id).filter(Boolean) }));
+    } catch (e) {
+      console.error('[queries.getEvents] fallback:', e);
+    }
+  }
+  return opts.includeUnpublished ? seedEvents : seedEvents.filter((e) => e.publish === 'opublikowany');
+}
+export async function getUpcomingEvents(): Promise<EventItem[]> {
+  return (await getEvents()).filter((e) => isUpcoming(e.date)).sort((a, b) => a.date.localeCompare(b.date));
+}
+export async function getPastEvents(): Promise<EventItem[]> {
+  return (await getEvents()).filter((e) => !isUpcoming(e.date)).sort((a, b) => b.date.localeCompare(a.date));
+}
+export async function getEventBySlug(slug: string): Promise<EventItem | null> {
+  const all = await getEvents({ includeUnpublished: true });
+  return all.find((e) => e.slug === slug) ?? null;
+}
+export async function getEventById(id: string): Promise<EventItem | null> {
+  if (!isSupabaseConfigured) return seedEvents.find((e) => e.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('events').select(EVENT_SELECT).eq('id', id).maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const mapped = mapEventRow(data);
+    const allHorses = await getHorses({ includeUnpublished: true });
+    const byId = new Map(allHorses.map((h) => [h.id, h.slug]));
+    return { ...mapped, horse_slugs: mapped.horse_slugs.map((id) => byId.get(id) ?? id).filter(Boolean) };
+  } catch (e) {
+    console.error('[queries.getEventById]', e);
+    return null;
+  }
+}
+
+// ============================================================================
+//  GALERIA
+// ============================================================================
+const ALBUM_SELECT = '*, album_images(*)';
+
+function mapAlbumRow(row: any): Album {
+  const images = (row.album_images ?? [])
+    .map((i: any) => ({ id: i.id, url: i.url, thumb: i.thumb ?? undefined, alt: i.alt ?? '', position: i.position ?? 0 }))
+    .sort((a: any, b: any) => a.position - b.position);
+  const cover = row.cover_url
+    ? { id: `${row.id}-cover`, url: row.cover_url, alt: row.cover_alt ?? row.title, position: 0 }
+    : images[0] ?? { id: `${row.id}-cover`, url: '/images/full/hero.webp', alt: row.title, position: 0 };
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description ?? undefined,
+    date: row.date ?? undefined,
+    cover,
+    images,
+    publish: row.publish,
+    position: row.position ?? 0,
+  };
+}
+
+export async function getAlbums(opts: { includeUnpublished?: boolean } = {}): Promise<Album[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      let query = supabase.from('albums').select(ALBUM_SELECT);
+      if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
+      const { data, error } = await query.order('position', { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map(mapAlbumRow);
+    } catch (e) {
+      console.error('[queries.getAlbums] fallback:', e);
+    }
+  }
+  const list = opts.includeUnpublished ? seedAlbums : seedAlbums.filter((a) => a.publish === 'opublikowany');
+  return [...list].sort((a, b) => a.position - b.position);
+}
+export async function getAlbumBySlug(slug: string): Promise<Album | null> {
+  const all = await getAlbums({ includeUnpublished: true });
+  return all.find((a) => a.slug === slug) ?? null;
+}
+export async function getAlbumById(id: string): Promise<Album | null> {
+  if (!isSupabaseConfigured) return seedAlbums.find((a) => a.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('albums').select(ALBUM_SELECT).eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapAlbumRow(data) : null;
+  } catch (e) {
+    console.error('[queries.getAlbumById]', e);
+    return null;
+  }
+}
+
+// ============================================================================
+//  OFERTA
+// ============================================================================
+function mapOfferRow(row: any): Offer {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt ?? '',
+    body: row.body ?? undefined,
+    image: row.image_url
+      ? { id: `${row.id}-img`, url: row.image_url, alt: row.image_alt ?? row.title, position: 0 }
+      : { id: `${row.id}-img`, url: '/images/full/hero.webp', alt: row.title, position: 0 },
+    price: row.price ?? undefined,
+    benefits: row.benefits ?? undefined,
+    active: row.active,
+    position: row.position ?? 0,
+  };
+}
+
+export async function getOffers(opts: { includeInactive?: boolean } = {}): Promise<Offer[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      let query = supabase.from('offers').select('*');
+      if (!opts.includeInactive) query = query.eq('active', true);
+      const { data, error } = await query.order('position', { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map(mapOfferRow);
+    } catch (e) {
+      console.error('[queries.getOffers] fallback:', e);
+    }
+  }
+  const list = opts.includeInactive ? seedOffers : seedOffers.filter((o) => o.active);
+  return [...list].sort((a, b) => a.position - b.position);
+}
+export async function getOfferBySlug(slug: string): Promise<Offer | null> {
+  const all = await getOffers({ includeInactive: true });
+  return all.find((o) => o.slug === slug) ?? null;
+}
+export async function getOfferById(id: string): Promise<Offer | null> {
+  if (!isSupabaseConfigured) return seedOffers.find((o) => o.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('offers').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapOfferRow(data) : null;
+  } catch (e) {
+    console.error('[queries.getOfferById]', e);
+    return null;
+  }
+}
+
+// ============================================================================
+//  OŚ CZASU
+// ============================================================================
+function mapTimelineRow(row: any): TimelineEntry {
+  return {
+    id: row.id,
+    year: row.year,
+    title: row.title,
+    description: row.description ?? '',
+    image: row.image_url ? { id: `${row.id}-img`, url: row.image_url, alt: row.image_alt ?? row.title, position: 0 } : undefined,
+    position: row.position ?? 0,
+  };
+}
+
+export async function getTimeline(): Promise<TimelineEntry[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('timeline_entries').select('*').order('position', { ascending: true });
+      if (error) throw error;
+      if (data && data.length) return data.map(mapTimelineRow);
+      return [];
+    } catch (e) {
+      console.error('[queries.getTimeline] fallback:', e);
+    }
+  }
+  return seedTimeline;
+}
+export async function getTimelineEntryById(id: string): Promise<TimelineEntry | null> {
+  if (!isSupabaseConfigured) return seedTimeline.find((t) => t.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('timeline_entries').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapTimelineRow(data) : null;
+  } catch (e) {
+    console.error('[queries.getTimelineEntryById]', e);
+    return null;
+  }
+}
+
+// ============================================================================
+//  TREŚCI STRONY GŁÓWNEJ + USTAWIENIA
+// ============================================================================
+export async function getHomeContent(): Promise<HomeContent> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('page_content').select('value').eq('key', 'home').maybeSingle();
+      if (error) throw error;
+      return mergeHomeContent(data?.value ?? null);
+    } catch (e) {
+      console.error('[queries.getHomeContent] fallback:', e);
+    }
+  }
+  return DEFAULT_HOME_CONTENT;
+}
+
+export async function getAboutContent(): Promise<AboutContent> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('page_content').select('value').eq('key', 'about').maybeSingle();
+      if (error) throw error;
+      return mergeAboutContent(data?.value ?? null);
+    } catch (e) {
+      console.error('[queries.getAboutContent] fallback:', e);
+    }
+  }
+  return DEFAULT_ABOUT_CONTENT;
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('site_settings').select('value').eq('key', 'general').maybeSingle();
+      if (error) throw error;
+      return mergeSiteSettings(data?.value ?? null);
+    } catch (e) {
+      console.error('[queries.getSiteSettings] fallback:', e);
+    }
+  }
+  return DEFAULT_SITE_SETTINGS;
+}
+
+// ── Statystyki panelu ─────────────────────────────────────────────────────────
+export async function getDashboardStats() {
+  const [horses, events, albums, offers] = await Promise.all([
+    getHorses({ includeUnpublished: true }),
+    getEvents({ includeUnpublished: true }),
+    getAlbums({ includeUnpublished: true }),
+    getOffers({ includeInactive: true }),
+  ]);
+  return {
+    horsesTotal: horses.length,
+    horsesForSale: horses.filter((h) => h.status === 'na_sprzedaz').length,
+    horsesSold: horses.filter((h) => h.status === 'sprzedany').length,
+    events: events.length,
+    albums: albums.length,
+    offers: offers.length,
+  };
 }
 
 // ── Panel: wiadomości kontaktowe ──────────────────────────────────────────────
@@ -310,3 +570,5 @@ export async function getUnreadMessagesCount(): Promise<number> {
     return 0;
   }
 }
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

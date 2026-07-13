@@ -10,6 +10,8 @@ export const metadata = buildMetadata({
   path: '/wydarzenia',
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function EventsPage() {
   const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()]);
 

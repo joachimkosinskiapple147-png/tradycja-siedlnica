@@ -53,7 +53,7 @@ async function persist(payload: Record<string, unknown>): Promise<FormState> {
 
   // Powiadomienie e-mail: patrz README → „Konfiguracja e-mail”. Wysyłkę realizuje
   // funkcja brzegowa / webhook Supabase lub dostawca (Resend). Hak w jednym miejscu:
-  await notifyAdminEmail(payload).catch((e) => console.error('[email] pominięto:', e));
+  await notifyAdminEmail().catch((e) => console.error('[email] pominięto:', e));
 
   return {
     ok: true,
@@ -61,7 +61,7 @@ async function persist(payload: Record<string, unknown>): Promise<FormState> {
   };
 }
 
-async function notifyAdminEmail(_payload: Record<string, unknown>) {
+async function notifyAdminEmail() {
   // Miejsce na integrację e-mail (np. Resend). Aktywne po ustawieniu RESEND_API_KEY.
   if (!process.env.RESEND_API_KEY) return;
   // Przykład (do włączenia po dodaniu zależności 'resend' i klucza):

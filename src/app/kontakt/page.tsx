@@ -1,23 +1,23 @@
-import { SITE } from '@/lib/constants';
 import { buildMetadata } from '@/lib/seo';
+import { getSiteSettings } from '@/lib/data/queries';
 import { PageHero } from '@/components/ui/Primitives';
 import ContactForm from '@/components/site/ContactForm';
 
-export const metadata = buildMetadata({
-  title: 'Kontakt',
-  description: `Skontaktuj się ze stajnią Tradycja Siedlnica. Telefon: ${SITE.phone}, e-mail: ${SITE.email}.`,
-  path: '/kontakt',
-});
+export async function generateMetadata() {
+  const settings = await getSiteSettings();
+  return buildMetadata({
+    title: 'Kontakt',
+    description: `Skontaktuj się ze stajnią Tradycja Siedlnica. Telefon: ${settings.phone}, e-mail: ${settings.email}.`,
+    path: '/kontakt',
+  });
+}
 
-const HOURS = [
-  { d: 'Poniedziałek – Piątek', h: '9:00 – 18:00' },
-  { d: 'Sobota', h: '9:00 – 16:00' },
-  { d: 'Niedziela', h: 'po wcześniejszym umówieniu' },
-];
+export const dynamic = 'force-dynamic';
 
-export default function ContactPage({ searchParams }: { searchParams: { temat?: string } }) {
-  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(SITE.mapEmbedQuery)}&output=embed`;
-  const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SITE.address.full)}`;
+export default async function ContactPage({ searchParams }: { searchParams: { temat?: string } }) {
+  const settings = await getSiteSettings();
+  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(settings.map_query)}&output=embed`;
+  const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(settings.address_full)}`;
 
   return (
     <>
@@ -41,18 +41,18 @@ export default function ContactPage({ searchParams }: { searchParams: { temat?: 
               <div>
                 <dt className="text-[0.7rem] uppercase tracking-eyebrow text-brass-deep">Telefon</dt>
                 <dd className="mt-1">
-                  <a href={`tel:${SITE.phoneHref}`} className="link-underline font-display text-3xl text-navy">{SITE.phone}</a>
+                  <a href={`tel:${settings.phone_href}`} className="link-underline font-display text-3xl text-navy">{settings.phone}</a>
                 </dd>
               </div>
               <div>
                 <dt className="text-[0.7rem] uppercase tracking-eyebrow text-brass-deep">E-mail</dt>
                 <dd className="mt-1">
-                  <a href={`mailto:${SITE.email}`} className="link-underline break-all text-lg text-navy">{SITE.email}</a>
+                  <a href={`mailto:${settings.email}`} className="link-underline break-all text-lg text-navy">{settings.email}</a>
                 </dd>
               </div>
               <div>
                 <dt className="text-[0.7rem] uppercase tracking-eyebrow text-brass-deep">Adres</dt>
-                <dd className="mt-1 text-lg text-navy">{SITE.address.full}</dd>
+                <dd className="mt-1 text-lg text-navy">{settings.address_full}</dd>
                 <dd className="mt-2">
                   <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="link-underline text-sm text-brass-deep">
                     Wyznacz trasę →
@@ -64,14 +64,14 @@ export default function ContactPage({ searchParams }: { searchParams: { temat?: 
             <div className="mt-10">
               <h3 className="text-[0.7rem] uppercase tracking-eyebrow text-brass-deep">Godziny otwarcia</h3>
               <ul className="mt-4 space-y-2">
-                {HOURS.map((r) => (
-                  <li key={r.d} className="flex justify-between gap-4 border-b border-navy/10 py-2 text-[0.95rem]">
-                    <span className="text-charcoal/75">{r.d}</span>
-                    <span className="font-medium text-navy">{r.h}</span>
+                {settings.hours.map((r) => (
+                  <li key={r.day} className="flex justify-between gap-4 border-b border-navy/10 py-2 text-[0.95rem]">
+                    <span className="text-charcoal/75">{r.day}</span>
+                    <span className="font-medium text-navy">{r.hours}</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-sm text-charcoal/55">Wizyty najlepiej umawiać telefonicznie z wyprzedzeniem.</p>
+              <p className="mt-3 text-sm text-charcoal/55">{settings.hours_note}</p>
             </div>
           </div>
 
@@ -99,9 +99,6 @@ export default function ContactPage({ searchParams }: { searchParams: { temat?: 
             referrerPolicy="no-referrer-when-downgrade"
           />
         </div>
-        <p className="shell py-4 text-sm text-charcoal/55">
-          Dokładną lokalizację i osadzenie mapy skonfigurujesz w panelu administratora (Ustawienia → Mapa).
-        </p>
       </section>
     </>
   );

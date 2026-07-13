@@ -38,6 +38,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (pathname.startsWith('/admin') && !isLogin && user) {
+    const { data: admin, error } = await supabase.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+    // Jeśli tabela `admins` jeszcze nie istnieje (migracja 0001 nie została uruchomiona),
+    // nie blokujemy dostępu — dotychczasowe zasady (każdy zalogowany) obowiązują do czasu migracji.
+    if (!error && !admin) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin/login';
+      url.search = '';
+      url.searchParams.set('blad', 'brak_uprawnien');
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (isLogin && user) {
     const url = request.nextUrl.clone();
     url.pathname = '/admin';

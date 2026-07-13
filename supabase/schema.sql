@@ -15,6 +15,32 @@ begin
 end $$;
 
 -- ============================================================================
+--  ADMINISTRATORZY
+--  Tylko użytkownicy wpisani do tej tabeli mogą zapisywać/czytać treści
+--  w panelu — zwykłe konto Supabase Auth (authenticated) to za mało.
+-- ============================================================================
+create table if not exists public.admins (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+alter table public.admins enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.admins a where a.user_id = auth.uid());
+$$;
+grant execute on function public.is_admin() to anon, authenticated;
+
+drop policy if exists admins_self_read on public.admins;
+create policy admins_self_read on public.admins
+  for select to authenticated using (public.is_admin());
+
+-- ============================================================================
 --  KONIE
 -- ============================================================================
 create table if not exists public.horses (
@@ -74,6 +100,10 @@ create table if not exists public.horse_videos (
   youtube_id  text not null,
   title       text,
   description text,
+  category    text
+              check (category is null or category in
+                ('przejazd','trening','skoki','ujezdzenie','zawody','prezentacja','inne')),
+  publish     boolean not null default true,
   position    integer not null default 0
 );
 create index if not exists horse_videos_horse_idx on public.horse_videos (horse_id, position);
@@ -250,26 +280,26 @@ create policy horses_public_read on public.horses
   for select using (publish = 'opublikowany');
 drop policy if exists horses_auth_all on public.horses;
 create policy horses_auth_all on public.horses
-  for all to authenticated using (true) with check (true);
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- Powiązane z koniem (zdjęcia/wideo/rodowód): odczyt, gdy koń opublikowany
 drop policy if exists horse_images_public_read on public.horse_images;
 create policy horse_images_public_read on public.horse_images for select using (
   exists (select 1 from public.horses h where h.id = horse_id and h.publish = 'opublikowany'));
 drop policy if exists horse_images_auth_all on public.horse_images;
-create policy horse_images_auth_all on public.horse_images for all to authenticated using (true) with check (true);
+create policy horse_images_auth_all on public.horse_images for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists horse_videos_public_read on public.horse_videos;
 create policy horse_videos_public_read on public.horse_videos for select using (
-  exists (select 1 from public.horses h where h.id = horse_id and h.publish = 'opublikowany'));
+  publish = true and exists (select 1 from public.horses h where h.id = horse_id and h.publish = 'opublikowany'));
 drop policy if exists horse_videos_auth_all on public.horse_videos;
-create policy horse_videos_auth_all on public.horse_videos for all to authenticated using (true) with check (true);
+create policy horse_videos_auth_all on public.horse_videos for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists horse_pedigree_public_read on public.horse_pedigree;
 create policy horse_pedigree_public_read on public.horse_pedigree for select using (
   exists (select 1 from public.horses h where h.id = horse_id and h.publish = 'opublikowany'));
 drop policy if exists horse_pedigree_auth_all on public.horse_pedigree;
-create policy horse_pedigree_auth_all on public.horse_pedigree for all to authenticated using (true) with check (true);
+create policy horse_pedigree_auth_all on public.horse_pedigree for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- Wydarzenia / galerie / oferta / oś czasu / ustawienia — analogiczny wzorzec
 do $$
@@ -279,13 +309,13 @@ begin
     execute format('drop policy if exists %I_public_read on public.%I;', t, t);
     execute format('create policy %I_public_read on public.%I for select using (publish = ''opublikowany'');', t, t);
     execute format('drop policy if exists %I_auth_all on public.%I;', t, t);
-    execute format('create policy %I_auth_all on public.%I for all to authenticated using (true) with check (true);', t, t);
+    execute format('create policy %I_auth_all on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin());', t, t);
   end loop;
   foreach t in array array['event_images','event_videos','event_horses','album_images','timeline_entries','site_settings','page_content'] loop
     execute format('drop policy if exists %I_public_read on public.%I;', t, t);
     execute format('create policy %I_public_read on public.%I for select using (true);', t, t);
     execute format('drop policy if exists %I_auth_all on public.%I;', t, t);
-    execute format('create policy %I_auth_all on public.%I for all to authenticated using (true) with check (true);', t, t);
+    execute format('create policy %I_auth_all on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin());', t, t);
   end loop;
 end $$;
 
@@ -296,21 +326,21 @@ create policy offers_public_read on public.offers
 
 drop policy if exists offers_auth_all on public.offers;
 create policy offers_auth_all on public.offers
-  for all to authenticated using (true) with check (true);
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- Wiadomości: anon może dodać (formularz), tylko zalogowani czytają/edytują
+-- Wiadomości: anon może dodać (formularz), tylko administrator czyta/edytuje
 drop policy if exists messages_public_insert on public.contact_messages;
 create policy messages_public_insert on public.contact_messages
   for insert to anon, authenticated with check (true);
 drop policy if exists messages_auth_read on public.contact_messages;
 create policy messages_auth_read on public.contact_messages
-  for select to authenticated using (true);
+  for select to authenticated using (public.is_admin());
 drop policy if exists messages_auth_modify on public.contact_messages;
 create policy messages_auth_modify on public.contact_messages
-  for update to authenticated using (true) with check (true);
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
 drop policy if exists messages_auth_delete on public.contact_messages;
 create policy messages_auth_delete on public.contact_messages
-  for delete to authenticated using (true);
+  for delete to authenticated using (public.is_admin());
 
 -- ============================================================================
 --  STORAGE — bucket na zdjęcia koni/galerii (publiczny odczyt)
@@ -324,12 +354,21 @@ create policy media_public_read on storage.objects
   for select using (bucket_id = 'media');
 drop policy if exists media_auth_write on storage.objects;
 create policy media_auth_write on storage.objects
-  for insert to authenticated with check (bucket_id = 'media');
+  for insert to authenticated with check (bucket_id = 'media' and public.is_admin());
 drop policy if exists media_auth_update on storage.objects;
 create policy media_auth_update on storage.objects
-  for update to authenticated using (bucket_id = 'media');
+  for update to authenticated using (bucket_id = 'media' and public.is_admin());
 drop policy if exists media_auth_delete on storage.objects;
 create policy media_auth_delete on storage.objects
-  for delete to authenticated using (bucket_id = 'media');
+  for delete to authenticated using (bucket_id = 'media' and public.is_admin());
+
+-- ============================================================================
+--  PO URUCHOMIENIU: dodaj pierwszego administratora
+--  1. Authentication → Users → Add user (e-mail + hasło, zaznacz „Auto Confirm”).
+--  2. W SQL Editor:
+--     insert into public.admins (user_id)
+--     select id from auth.users where email = 'tradycja.siedlnica@gmail.com'
+--     on conflict (user_id) do nothing;
+-- ============================================================================
 
 -- Koniec schematu.

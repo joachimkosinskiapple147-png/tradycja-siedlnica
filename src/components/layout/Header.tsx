@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import Logo from './Logo';
 import MobileNav from './MobileNav';
 
-export default function Header() {
+export default function Header({ phone, phoneHref }: { phone: string; phoneHref: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -86,7 +86,7 @@ export default function Header() {
         </div>
       </header>
 
-      <MobileNav open={open} onClose={() => setOpen(false)} />
+      <MobileNav open={open} onClose={() => setOpen(false)} phone={phone} phoneHref={phoneHref} />
     </>
   );
 }

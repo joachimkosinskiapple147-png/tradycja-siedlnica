@@ -1,8 +1,19 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { NAV, SITE } from '@/lib/constants';
+import type { SiteSettings } from '@/lib/types';
 
-export default function Footer() {
+const SOCIAL_LABEL: Record<string, string> = {
+  social_facebook: 'Facebook',
+  social_instagram: 'Instagram',
+  social_youtube: 'YouTube',
+};
+
+export default function Footer({ settings }: { settings: SiteSettings }) {
+  const socialLinks = (['social_facebook', 'social_instagram', 'social_youtube'] as const)
+    .map((key) => ({ key, url: settings[key] }))
+    .filter((s) => s.url);
+
   return (
     <footer className="bg-navy text-ivory/80">
       <div className="shell-wide grid gap-12 py-16 md:grid-cols-12 md:py-20">
@@ -22,10 +33,7 @@ export default function Footer() {
               </div>
             </div>
           </div>
-          <p className="prose-lux mt-6 max-w-sm text-ivory/70">
-            Hodowla, trening i sprzedaż koni sportowych. Ponad 35 lat doświadczenia i szacunku do
-            każdego konia.
-          </p>
+          <p className="prose-lux mt-6 max-w-sm text-ivory/70">{settings.footer_text}</p>
         </div>
 
         <div className="md:col-span-3">
@@ -45,28 +53,36 @@ export default function Footer() {
           <h2 className="text-[0.68rem] uppercase tracking-eyebrow text-brass-soft">Kontakt</h2>
           <ul className="mt-5 space-y-3">
             <li>
-              <a href={`tel:${SITE.phoneHref}`} className="link-underline font-display text-2xl text-ivory">
-                {SITE.phone}
+              <a href={`tel:${settings.phone_href}`} className="link-underline font-display text-2xl text-ivory">
+                {settings.phone}
               </a>
             </li>
             <li>
-              <a href={`mailto:${SITE.email}`} className="link-underline break-all text-ivory/80 hover:text-ivory">
-                {SITE.email}
+              <a href={`mailto:${settings.email}`} className="link-underline break-all text-ivory/80 hover:text-ivory">
+                {settings.email}
               </a>
             </li>
-            <li className="text-ivory/70">{SITE.address.label}</li>
+            <li className="text-ivory/70">{settings.address_label}</li>
           </ul>
         </div>
 
         <div className="md:col-span-2">
           <h2 className="text-[0.68rem] uppercase tracking-eyebrow text-brass-soft">Social</h2>
-          <ul className="mt-5 space-y-2.5 text-ivory/80">
-            <li><span className="opacity-60">Facebook — wkrótce</span></li>
-            <li><span className="opacity-60">Instagram — wkrótce</span></li>
-          </ul>
-          <p className="mt-4 text-[0.7rem] leading-relaxed text-ivory/45">
-            Linki do mediów społecznościowych ustawisz w panelu (Ustawienia).
-          </p>
+          {socialLinks.length > 0 ? (
+            <ul className="mt-5 space-y-2.5 text-ivory/80">
+              {socialLinks.map((s) => (
+                <li key={s.key}>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="link-underline hover:text-ivory">
+                    {SOCIAL_LABEL[s.key]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-5 text-[0.72rem] leading-relaxed text-ivory/45">
+              Linki do mediów społecznościowych ustawisz w panelu (Ustawienia).
+            </p>
+          )}
         </div>
       </div>
 

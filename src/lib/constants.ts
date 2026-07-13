@@ -52,3 +52,15 @@ export const SEX_LABEL: Record<string, string> = {
   walach: 'Wałach',
   zrebak: 'Źrebak',
 };
+
+export const VIDEO_CATEGORY_LABEL: Record<string, string> = {
+  przejazd: 'Przejazd',
+  trening: 'Trening',
+  skoki: 'Skoki',
+  ujezdzenie: 'Ujeżdżenie',
+  zawody: 'Zawody',
+  prezentacja: 'Prezentacja',
+  inne: 'Inne',
+};
+
+export const VIDEO_CATEGORIES = Object.keys(VIDEO_CATEGORY_LABEL) as (keyof typeof VIDEO_CATEGORY_LABEL)[];

@@ -71,6 +71,8 @@ export const seedHorses: Horse[] = [
         youtube_id: 'ScMzIvxBSi4',
         title: 'Prezentacja pod siodłem (film demonstracyjny — do podmiany)',
         description: 'Wklej własny link do filmu z YouTube w panelu administratora.',
+        category: 'prezentacja',
+        publish: true,
         position: 0,
       },
     ],
@@ -271,6 +273,7 @@ export const seedEvents: EventItem[] = [
     videos: [],
     horse_slugs: ['nokaut', 'cyprian'],
     publish: 'opublikowany',
+    position: 0,
   },
   {
     id: 'e-prezentacja',
@@ -293,6 +296,7 @@ export const seedEvents: EventItem[] = [
     videos: [],
     horse_slugs: ['wega', 'iskra'],
     publish: 'opublikowany',
+    position: 1,
   },
 ];
 
@@ -434,6 +438,7 @@ export const seedTimeline: TimelineEntry[] = [
     description:
       'Powstaje stajnia Tradycja Siedlnica. (Treść przykładowa — uzupełnij prawdziwą historię w panelu administratora.)',
     image: img('lord-pastwisko', 'Pastwiska stajni'),
+    position: 0,
   },
   {
     id: 't-rozwoj',
@@ -442,6 +447,7 @@ export const seedTimeline: TimelineEntry[] = [
     description:
       'Hodowla rośnie, a doświadczenie przekazywane jest z pokolenia na pokolenie. (Treść przykładowa — do edycji.)',
     image: img('wega-padok', 'Konie na padoku'),
+    position: 1,
   },
   {
     id: 't-dzis',
@@ -450,5 +456,6 @@ export const seedTimeline: TimelineEntry[] = [
     description:
       'Prowadzimy hodowlę, trening i sprzedaż koni sportowych, dbając o indywidualne podejście do każdego konia. (Treść przykładowa — do edycji.)',
     image: img('konie-nad-woda', 'Konie nad wodą'),
+    position: 2,
   },
 ];

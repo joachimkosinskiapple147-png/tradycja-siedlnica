@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status *)",
+      "Bash(python3 *)",
+      "Bash(npm run *)",
+      "Bash(node -e \"console.log\\(require\\('./package.json'\\).dependencies.next\\)\")",
+      "Bash(npm view *)",
+      "Bash(npm install *)"
+    ]
+  }
+}

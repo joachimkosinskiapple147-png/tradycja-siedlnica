@@ -1,10 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { getOffers } from '@/lib/data/queries';
+import { getOffers, getSiteSettings } from '@/lib/data/queries';
 import { buildMetadata } from '@/lib/seo';
 import { PageHero } from '@/components/ui/Primitives';
 import Reveal from '@/components/ui/Reveal';
-import { SITE } from '@/lib/constants';
 
 export const metadata = buildMetadata({
   title: 'Oferta',
@@ -13,8 +12,10 @@ export const metadata = buildMetadata({
   path: '/oferta',
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function OfferPage() {
-  const offers = await getOffers();
+  const [offers, settings] = await Promise.all([getOffers(), getSiteSettings()]);
 
   return (
     <>
@@ -67,7 +68,7 @@ export default async function OfferPage() {
         <div className="shell text-center">
           <h2 className="mx-auto max-w-2xl text-display-md font-light">Masz pytania o którąś z usług?</h2>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href={`tel:${SITE.phoneHref}`} className="btn-brass">Zadzwoń: {SITE.phone}</a>
+            <a href={`tel:${settings.phone_href}`} className="btn-brass">Zadzwoń: {settings.phone}</a>
             <Link href="/kontakt" className="btn-ghost-light">Napisz do nas</Link>
           </div>
         </div>

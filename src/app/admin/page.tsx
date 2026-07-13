@@ -51,6 +51,9 @@ export default async function AdminDashboard() {
     { label: 'Na sprzedaż', value: stats.horsesForSale, href: '/admin/konie?status=na_sprzedaz' },
     { label: 'Sprzedane', value: stats.horsesSold, href: '/admin/konie?status=sprzedany' },
     { label: 'Nowe wiadomości', value: unread, href: '/admin/wiadomosci' },
+    { label: 'Wydarzenia', value: stats.events, href: '/admin/wydarzenia' },
+    { label: 'Albumy galerii', value: stats.albums, href: '/admin/galeria' },
+    { label: 'Pozycje oferty', value: stats.offers, href: '/admin/oferta' },
   ];
 
   return (
@@ -68,22 +71,16 @@ export default async function AdminDashboard() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
-          <div className="border border-navy/12 bg-ivory p-6">
-            <h2 className="font-display text-xl text-navy">Szybkie akcje</h2>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/admin/konie/nowy" className="btn-primary">Dodaj konia</Link>
-              <Link href="/admin/konie" className="btn-ghost">Zarządzaj końmi</Link>
-              <Link href="/admin/wiadomosci" className="btn-ghost">Skrzynka wiadomości</Link>
-            </div>
-          </div>
-          <div className="border border-brass/40 bg-brass/5 p-6">
-            <h2 className="font-display text-xl text-navy">Moduły w przygotowaniu</h2>
-            <p className="prose-lux mt-3 text-sm text-charcoal/75">
-              Wydarzenia, Galerie, Oferta, treści Strony głównej i Ustawienia działają obecnie na danych
-              przykładowych. Ich edycja w panelu powstaje w kolejnym etapie — według tego samego wzorca,
-              co moduł Konie (baza + formularz + lista).
-            </p>
+        <div className="mt-8 border border-navy/12 bg-ivory p-6">
+          <h2 className="font-display text-xl text-navy">Szybkie akcje</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/admin/konie/nowy" className="btn-primary">Dodaj konia</Link>
+            <Link href="/admin/wydarzenia/nowe" className="btn-ghost">Dodaj wydarzenie</Link>
+            <Link href="/admin/galeria/nowy" className="btn-ghost">Dodaj album</Link>
+            <Link href="/admin/oferta/nowa" className="btn-ghost">Dodaj ofertę</Link>
+            <Link href="/admin/wiadomosci" className="btn-ghost">Skrzynka wiadomości</Link>
+            <Link href="/admin/strona-glowna" className="btn-ghost">Edytuj stronę główną</Link>
+            <Link href="/admin/ustawienia" className="btn-ghost">Ustawienia</Link>
           </div>
         </div>
       </div>

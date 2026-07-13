@@ -36,15 +36,15 @@ export function buildMetadata(opts: {
   };
 }
 
-export function localBusinessJsonLd() {
+export function localBusinessJsonLd(overrides?: { phoneHref?: string; email?: string }) {
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: SITE.legalName,
     description: SITE.description,
     foundingDate: String(SITE.foundedYear),
-    telephone: SITE.phoneHref,
-    email: SITE.email,
+    telephone: overrides?.phoneHref ?? SITE.phoneHref,
+    email: overrides?.email ?? SITE.email,
     url: SITE.url,
     address: {
       '@type': 'PostalAddress',

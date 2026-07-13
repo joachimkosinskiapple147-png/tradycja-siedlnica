@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { getTimeline } from '@/lib/data/queries';
+import { getAboutContent, getTimeline } from '@/lib/data/queries';
 import { buildMetadata } from '@/lib/seo';
 import { PageHero, SectionHeader, Ornament } from '@/components/ui/Primitives';
 import { Timeline } from '@/components/site/Cards';
@@ -13,8 +13,11 @@ export const metadata = buildMetadata({
   path: '/nasza-stajnia',
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function StablePage() {
-  const timeline = await getTimeline();
+  const [timeline, about] = await Promise.all([getTimeline(), getAboutContent()]);
+  const aboutParagraphs = about.intro_text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
 
   const values = [
     { t: 'Indywidualne podejście', d: 'Każdy koń pracuje we własnym tempie. Obserwujemy, słuchamy i dobieramy metody do charakteru zwierzęcia.' },
@@ -41,16 +44,7 @@ export default async function StablePage() {
             <div>
               <SectionHeader eyebrow="Kim jesteśmy" title="Hodowla z charakterem i historią" />
               <div className="prose-lux mt-6 space-y-4">
-                <p>
-                  Tradycja Siedlnica to stajnia prowadzona przez Sylwestra Kosińskiego, działająca
-                  nieprzerwanie od 1989 roku. Dziś opiekujemy się stadem liczącym około stu koni — od
-                  źrebiąt, przez młodzież hodowlaną, po konie pracujące pod siodłem.
-                </p>
-                <p>
-                  Zajmujemy się hodowlą, treningiem oraz sprzedażą koni sportowych. Łączymy wieloletnie
-                  doświadczenie z codzienną, spokojną pracą przy koniach. (Treść przykładowa — do
-                  uzupełnienia prawdziwą historią w panelu administratora.)
-                </p>
+                {aboutParagraphs.map((p, i) => <p key={i}>{p}</p>)}
               </div>
               <Ornament className="mt-8" />
             </div>
@@ -112,9 +106,6 @@ export default async function StablePage() {
           <div className="mt-14">
             <Timeline entries={timeline} />
           </div>
-          <p className="mt-8 text-sm italic text-charcoal/55">
-            Oś czasu zawiera treści przykładowe. Prawdziwe wydarzenia i lata uzupełnisz w panelu administratora.
-          </p>
         </div>
       </section>
 

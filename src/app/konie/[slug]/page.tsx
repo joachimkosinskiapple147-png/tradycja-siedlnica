@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getHorseBySlug, getSimilarHorses } from '@/lib/data/queries';
-import { SITE, SEX_LABEL } from '@/lib/constants';
+import { getHorseBySlug, getSimilarHorses, getSiteSettings } from '@/lib/data/queries';
+import { SEX_LABEL } from '@/lib/constants';
 import { buildMetadata, JsonLd, breadcrumbJsonLd } from '@/lib/seo';
 import { ageFromYear, formatDatePl } from '@/lib/utils';
 import { Breadcrumbs, StatusPill } from '@/components/ui/Primitives';
@@ -44,6 +44,8 @@ export default async function HorsePage({ params }: { params: { slug: string } }
   if (!horse || horse.publish !== 'opublikowany') notFound();
 
   const similar = await getSimilarHorses(horse, 3);
+  const settings = await getSiteSettings();
+  const visibleVideos = horse.videos.filter((v) => v.publish);
   const crumbs = [
     { name: 'Konie', path: '/konie' },
     { name: horse.name, path: `/konie/${horse.slug}` },
@@ -94,7 +96,7 @@ export default async function HorsePage({ params }: { params: { slug: string } }
                 <div className="mt-1 font-display text-3xl text-navy">{horse.price ?? 'Cena na zapytanie'}</div>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <a href="#zapytanie" className="btn-primary">Zapytaj o tego konia</a>
-                  <a href={`tel:${SITE.phoneHref}`} className="btn-ghost">Zadzwoń</a>
+                  <a href={`tel:${settings.phone_href}`} className="btn-ghost">Zadzwoń</a>
                 </div>
               </div>
             </div>
@@ -114,17 +116,6 @@ export default async function HorsePage({ params }: { params: { slug: string } }
               </div>
             )}
 
-            {horse.videos.length > 0 && (
-              <div className="mt-12">
-                <h2 className="font-display text-2xl text-navy">Filmy</h2>
-                <div className="rule-double mt-3 w-16" />
-                <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                  {horse.videos.map((v) => (
-                    <VideoEmbed key={v.id} video={v} />
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           <aside className="lg:col-span-5">
@@ -150,6 +141,22 @@ export default async function HorsePage({ params }: { params: { slug: string } }
           </aside>
         </div>
 
+        {/* Filmy z przejazdów i treningów */}
+        {visibleVideos.length > 0 && (
+          <section className="bg-cream py-section">
+            <div className="shell">
+              <span className="eyebrow text-brass-deep">Zobacz w ruchu</span>
+              <h2 className="mt-4 text-display-sm font-light text-navy">Filmy z przejazdów i treningów</h2>
+              <div className="rule-double mt-3 w-16" />
+              <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleVideos.map((v) => (
+                  <VideoEmbed key={v.id} video={v} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Formularz zapytania */}
         <section id="zapytanie" className="scroll-mt-24 bg-navy py-section text-ivory">
           <div className="shell grid gap-10 lg:grid-cols-12 lg:gap-14">
@@ -160,8 +167,8 @@ export default async function HorsePage({ params }: { params: { slug: string } }
                 Zostaw wiadomość — odpowiemy z dodatkowymi informacjami, zdjęciami i możliwością umówienia
                 prezentacji. Możesz też zadzwonić bezpośrednio.
               </p>
-              <a href={`tel:${SITE.phoneHref}`} className="mt-6 inline-block font-display text-3xl text-ivory">
-                {SITE.phone}
+              <a href={`tel:${settings.phone_href}`} className="mt-6 inline-block font-display text-3xl text-ivory">
+                {settings.phone}
               </a>
             </div>
             <div className="lg:col-span-7">

@@ -90,7 +90,7 @@ export function GalleryAlbumCard({ album }: { album: Album }) {
 export function Timeline({ entries }: { entries: TimelineEntry[] }) {
   return (
     <ol className="relative">
-      {entries.map((e, i) => (
+      {entries.map((e) => (
         <li key={e.id} className="relative grid gap-6 pb-12 last:pb-0 md:grid-cols-12 md:gap-10">
           <div className="md:col-span-3">
             <div className="font-display text-4xl text-brass-deep">{e.year}</div>

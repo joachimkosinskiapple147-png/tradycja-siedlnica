@@ -10,6 +10,8 @@ export const metadata = buildMetadata({
   path: '/galeria',
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function GalleryPage() {
   const albums = await getAlbums();
   return (

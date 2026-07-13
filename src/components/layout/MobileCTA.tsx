@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SITE } from '@/lib/constants';
 
-export default function MobileCTA() {
+export default function MobileCTA({ phoneHref }: { phoneHref: string }) {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
 
@@ -12,7 +11,7 @@ export default function MobileCTA() {
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy/10 bg-ivory/95 backdrop-blur-sm md:hidden">
       <div className="grid grid-cols-2">
         <a
-          href={`tel:${SITE.phoneHref}`}
+          href={`tel:${phoneHref}`}
           className="flex items-center justify-center gap-2 border-r border-navy/10 py-3.5 text-[0.8rem] font-semibold uppercase tracking-wide2 text-navy"
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
