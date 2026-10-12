@@ -11,10 +11,21 @@ import MobileNav from './MobileNav';
 export default function Header({ phone, phoneHref }: { phone: string; phoneHref: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [progress, setProgress] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 40);
+      // Aplikacyjne chowanie przy zjeździe, pokazywanie przy podjeździe
+      setHidden(y > 300 && y > lastY + 4);
+      lastY = y;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? Math.min(1, y / max) : 0);
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -30,8 +41,9 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
       <header
         className={cn(
           'fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-editorial',
+          hidden ? '-translate-y-full' : 'translate-y-0',
           solid
-            ? 'border-b border-navy/10 bg-ivory/95 backdrop-blur-sm'
+            ? 'border-b border-navy/10 bg-ivory/90 backdrop-blur-md shadow-[0_12px_32px_-20px_rgba(16,26,36,0.4)]'
             : 'border-b border-transparent bg-gradient-to-b from-navy/45 to-transparent'
         )}
       >
@@ -40,17 +52,18 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
             <Logo variant={solid ? 'light' : 'dark'} />
           </Link>
 
-          <nav aria-label="Główne" className="hidden items-center gap-7 lg:flex">
+          <nav aria-label="Główne" className="hidden items-center gap-1.5 lg:flex">
             {NAV.slice(1).map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'link-underline text-[0.82rem] font-medium uppercase tracking-wide2 transition-colors',
-                    solid ? 'text-navy/80 hover:text-navy' : 'text-ivory/90 hover:text-ivory',
-                    active && (solid ? 'text-navy' : 'text-ivory')
+                    'rounded-full px-3.5 py-2 text-[0.8rem] font-medium uppercase tracking-wide2 transition-all duration-300',
+                    solid ? 'text-navy/75 hover:bg-navy/5 hover:text-navy' : 'text-ivory/85 hover:bg-ivory/10 hover:text-ivory',
+                    active && (solid ? 'bg-navy text-ivory hover:bg-navy hover:text-ivory' : 'bg-ivory/15 text-ivory')
                   )}
                 >
                   {item.label}
@@ -59,7 +72,17 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <a
+              href={`tel:${phoneHref}`}
+              className={cn(
+                'hidden xl:inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-[0.8rem] font-semibold tracking-wide transition-colors',
+                solid ? 'border-navy/15 text-navy hover:border-navy' : 'border-ivory/30 text-ivory hover:bg-ivory/10'
+              )}
+            >
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true" />
+              {phone}
+            </a>
             <Link
               href="/konie"
               className={cn(
@@ -84,6 +107,7 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
             </button>
           </div>
         </div>
+        <span className="scroll-progress" style={{ width: `${Math.round(progress * 100)}%` }} aria-hidden="true" />
       </header>
 
       <MobileNav open={open} onClose={() => setOpen(false)} phone={phone} phoneHref={phoneHref} />

@@ -76,18 +76,72 @@
 
   .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap px-6 py-3 text-[0.82rem] font-semibold uppercase tracking-wide2 transition duration-300 ease-editorial;
+    border-radius: 999px;
+    box-shadow: 0 1px 0 rgba(16,26,36,0.06), 0 12px 28px -18px rgba(16,26,36,0.45);
+    will-change: transform;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  .btn:active {
+    transform: translateY(0) scale(0.99);
   }
   .btn-primary {
     @apply btn bg-navy text-ivory hover:bg-forest;
   }
   .btn-ghost {
     @apply btn border border-navy/25 text-navy hover:border-navy hover:bg-navy hover:text-ivory;
+    box-shadow: none;
   }
   .btn-ghost-light {
     @apply btn border border-ivory/40 text-ivory hover:bg-ivory hover:text-navy;
+    box-shadow: none;
   }
   .btn-brass {
     @apply btn bg-brass text-navy hover:bg-brass-deep hover:text-ivory;
+  }
+
+  /* Premium: szklana odznaka hero, cyfry sekcji, karty z unoszeniem */
+  .hero-badge {
+    @apply inline-flex items-center gap-2.5 border border-ivory/25 bg-ivory/10 px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-wide2 text-ivory/90;
+    border-radius: 999px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .hero-badge .dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full bg-brass-soft;
+    box-shadow: 0 0 0 4px rgba(187,162,120,0.25);
+  }
+  .section-num {
+    @apply font-display text-[0.8rem] tracking-eyebrow text-brass-deep/80;
+  }
+  .card-lift {
+    transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1px 0 0 rgba(16,26,36,0.06), 0 30px 60px -30px rgba(16,26,36,0.35);
+  }
+  .chip-stat {
+    @apply border border-navy/10 bg-cream/60 px-4 py-5;
+    border-radius: 18px;
+  }
+  /* Aplikacyjny pasek postępu w headerze */
+  .scroll-progress {
+    @apply absolute bottom-0 left-0 h-[2px] bg-brass;
+    transition: width 0.15s linear;
+  }
+  /* Płynny pasek przewijania w klimacie strony */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f6f1e8;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #a68a5b;
+    border-radius: 8px;
+    border: 2px solid #f6f1e8;
   }
 
   .link-underline {

@@ -10,24 +10,29 @@ export function SectionHeader({
   intro,
   align = 'left',
   tone = 'dark',
+  index,
 }: {
   eyebrow?: string;
   title: string;
   intro?: string;
   align?: 'left' | 'center';
   tone?: 'dark' | 'light';
+  index?: string;
 }) {
   const isLight = tone === 'light';
   return (
     <div className={cn('max-w-2xl', align === 'center' && 'mx-auto text-center')}>
-      {eyebrow && (
-        <span className={cn('eyebrow', align === 'center' && 'eyebrow--center justify-center', isLight && 'text-brass-soft')}>
-          {eyebrow}
-        </span>
-      )}
+      <div className={cn('flex items-center gap-3', align === 'center' && 'justify-center')}>
+        {index && <span className="section-num">{index}</span>}
+        {eyebrow && (
+          <span className={cn('eyebrow', align === 'center' && 'eyebrow--center justify-center', isLight && 'text-brass-soft')}>
+            {eyebrow}
+          </span>
+        )}
+      </div>
       <h2
         className={cn(
-          'mt-4 text-display-md font-light',
+          'mt-4 text-display-md font-light text-balance',
           isLight ? 'text-ivory' : 'text-navy'
         )}
       >
@@ -38,6 +43,7 @@ export function SectionHeader({
           {intro}
         </p>
       )}
+      <span className={cn('mt-6 block h-px w-16', isLight ? 'bg-brass-soft/60' : 'bg-brass/60', align === 'center' && 'mx-auto')} aria-hidden="true" />
     </div>
   );
 }
@@ -136,15 +142,16 @@ export function EmptyState({
   action?: { label: string; href: string };
 }) {
   return (
-    <div className="border border-navy/12 bg-cream px-8 py-16 text-center">
+    <div className="card-lift rounded-[22px] border border-navy/10 bg-cream px-8 py-16 text-center shadow-[0_24px_60px_-40px_rgba(16,26,36,0.35)]">
       <Image
         src="/images/brand/logo-badge-navy.png"
         alt=""
         width={60}
         height={60}
-        className="mx-auto h-14 w-14 rounded-full opacity-70"
+        className="mx-auto h-14 w-14 rounded-full opacity-80 ring-1 ring-brass/40 ring-offset-2 ring-offset-cream"
       />
       <h3 className="mt-6 font-display text-2xl text-navy">{title}</h3>
+      <Ornament className="mx-auto mt-4" />
       <p className="prose-lux mx-auto mt-3 text-charcoal/70">{message}</p>
       {action && (
         <Link href={action.href} className="btn-ghost mt-6">

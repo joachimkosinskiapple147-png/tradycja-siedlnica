@@ -61,10 +61,10 @@ export default async function HomePage() {
             </div>
           </Reveal>
           <Reveal delay={100}>
-            <div className="mt-14 grid grid-cols-2 gap-y-10 border-y border-navy/10 py-10 md:grid-cols-4">
+            <div className="mt-14 grid grid-cols-2 gap-4 border-y border-navy/10 py-10 md:grid-cols-4">
               {content.stats.map((s) => (
-                <div key={s.label} className="text-center">
-                  <div className="font-display text-5xl font-light text-navy md:text-6xl">{s.number}</div>
+                <div key={s.label} className="chip-stat card-lift text-center">
+                  <div className="font-display text-5xl font-light tabular-nums text-navy md:text-6xl">{s.number}</div>
                   <div className="mx-auto mt-2 max-w-[14ch] text-[0.72rem] uppercase tracking-wide2 text-charcoal/55">
                     {s.label}
                   </div>
@@ -80,7 +80,7 @@ export default async function HomePage() {
         <div className="shell">
           <Reveal>
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <SectionHeader eyebrow="Wybrane konie" title="Konie na sprzedaż" />
+              <SectionHeader eyebrow="Wybrane konie" title="Konie na sprzedaż" index="01" />
               <Link href="/konie" className="btn-ghost self-start md:self-auto">Zobacz wszystkie</Link>
             </div>
           </Reveal>
@@ -120,7 +120,7 @@ export default async function HomePage() {
       <section key="offers" className="bg-ivory py-section">
         <div className="shell">
           <Reveal>
-            <SectionHeader eyebrow="Czym się zajmujemy" title="Oferta" align="center" />
+            <SectionHeader eyebrow="Czym się zajmujemy" title="Oferta" align="center" index="02" />
           </Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {offers.slice(0, 6).map((o, i) => (
@@ -156,7 +156,7 @@ export default async function HomePage() {
         <div className="shell">
           <Reveal>
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <SectionHeader eyebrow="Fotografie" title="Galeria" />
+              <SectionHeader eyebrow="Fotografie" title="Galeria" index="03" />
               <Link href="/galeria" className="btn-ghost self-start md:self-auto">Zobacz galerię</Link>
             </div>
           </Reveal>
@@ -223,13 +223,19 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-photo-scrim" aria-hidden="true" />
           <div className="shell-wide relative z-10 w-full pt-[76px] text-ivory">
             <div className="max-w-3xl animate-fade-in">
-              <span className="eyebrow text-brass-soft">{content.hero_eyebrow}</span>
-              <h1 className="mt-6 text-display-xl font-light text-shadow-hero">{content.hero_heading}</h1>
+              <span className="hero-badge"><span className="dot" />Hodowla koni sportowych · od 1989</span>
+              <span className="eyebrow mt-5 text-brass-soft">{content.hero_eyebrow}</span>
+              <h1 className="mt-6 text-balance text-display-xl font-light text-shadow-hero">{content.hero_heading}</h1>
               <p className="prose-lux mt-6 max-w-xl text-ivory/85 text-shadow-hero">{content.hero_description}</p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <Link href={content.hero_button1_href} className="btn-brass">{content.hero_button1_label}</Link>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link href={content.hero_button1_href} className="btn-brass">{content.hero_button1_label} →</Link>
                 <Link href={content.hero_button2_href} className="btn-ghost-light">{content.hero_button2_label}</Link>
               </div>
+              <dl className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-[0.72rem] uppercase tracking-wide2 text-ivory/70">
+                <div className="flex items-center gap-2"><span className="inline-block h-1 w-1 rounded-full bg-brass-soft" />35+ lat hodowli</div>
+                <div className="flex items-center gap-2"><span className="inline-block h-1 w-1 rounded-full bg-brass-soft" />Trening i sprzedaż</div>
+                <div className="flex items-center gap-2"><span className="inline-block h-1 w-1 rounded-full bg-brass-soft" />Siedlnica · lubuskie</div>
+              </dl>
             </div>
           </div>
           <div className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-ivory/60 md:flex">
