@@ -7,7 +7,7 @@ export function EventCard({ event }: { event: EventItem }) {
   const upcoming = isUpcoming(event.date);
   return (
     <Link href={`/wydarzenia/${event.slug}`} className="group block">
-      <article>
+      <article className="card-app card-lift overflow-hidden">
         <div className="relative aspect-[3/2] overflow-hidden bg-beige-soft">
           <Image
             src={event.cover.url}
@@ -16,7 +16,7 @@ export function EventCard({ event }: { event: EventItem }) {
             sizes="(max-width:768px) 100vw, 33vw"
             className="object-cover transition-transform duration-[900ms] ease-editorial group-hover:scale-[1.04]"
           />
-          <span className="absolute left-4 top-4 status-pill bg-ivory/85 border-navy/15 text-navy">
+          <span className="absolute left-4 top-4 status-pill rounded-full bg-ivory/85 border-navy/15 text-navy">
             {upcoming ? 'Nadchodzące' : 'Zakończone'}
           </span>
         </div>
@@ -38,7 +38,8 @@ export function EventCard({ event }: { event: EventItem }) {
 
 export function OfferCard({ offer }: { offer: Offer }) {
   return (
-    <article className="group flex flex-col border border-navy/10 bg-cream transition-colors hover:border-navy/25">
+    <Link href={`/oferta/${offer.slug}`} className="group block">
+    <article className="card-app card-lift flex h-full flex-col overflow-hidden">
       <div className="relative aspect-[16/10] overflow-hidden">
         <Image
           src={offer.image.url}
@@ -52,13 +53,14 @@ export function OfferCard({ offer }: { offer: Offer }) {
         <h3 className="font-display text-2xl text-navy">{offer.title}</h3>
         <p className="prose-lux mt-2 text-[0.95rem] text-charcoal/75">{offer.excerpt}</p>
         {offer.price && <p className="mt-3 text-sm font-medium text-brass-deep">{offer.price}</p>}
-        <div className="mt-auto pt-5">
-          <Link href={`/kontakt?temat=${encodeURIComponent(offer.title)}`} className="link-underline text-[0.75rem] font-semibold uppercase tracking-wide2 text-navy">
-            Zapytaj o ofertę
-          </Link>
+        <div className="mt-auto flex items-center justify-between pt-5">
+          <span className="link-underline text-[0.75rem] font-bold uppercase tracking-wide2 text-navy">
+            Zobacz ofertę →
+          </span>
         </div>
       </div>
     </article>
+    </Link>
   );
 }
 
@@ -66,7 +68,7 @@ export function GalleryAlbumCard({ album }: { album: Album }) {
   return (
     <Link href={`/galeria/${album.slug}`} className="group block">
       <article>
-        <div className="relative aspect-[4/3] overflow-hidden bg-beige-soft">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-beige-soft">
           <Image
             src={album.cover.url}
             alt={album.cover.alt}

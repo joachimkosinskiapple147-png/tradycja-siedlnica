@@ -1,11 +1,11 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/lib/constants';
-import { getHorses, getEvents, getAlbums, getRiders, getStallions, getLegends } from '@/lib/data/queries';
+import { getHorses, getEvents, getAlbums, getRiders, getStallions, getLegends, getOffers } from '@/lib/data/queries';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [horses, events, albums, riders, stallions, legends] = await Promise.all([getHorses(), getEvents(), getAlbums(), getRiders(), getStallions(), getLegends()]);
+  const [horses, events, albums, riders, stallions, legends, offers] = await Promise.all([getHorses(), getEvents(), getAlbums(), getRiders(), getStallions(), getLegends(), getOffers()]);
 
   const staticRoutes = [
     '',
@@ -50,5 +50,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const riderRoutes = riders.map((r) => ({ url: `${SITE.url}/jezdcy/${r.slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6 }));
   const stallionRoutes = stallions.map((s) => ({ url: `${SITE.url}/stanowka/${s.slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8 }));
   const legendRoutes = legends.map((l) => ({ url: `${SITE.url}/legendy/${l.slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6 }));
-  return [...staticRoutes, ...horseRoutes, ...riderRoutes, ...stallionRoutes, ...legendRoutes, ...eventRoutes, ...albumRoutes];
+  const offerRoutes = offers.map((o) => ({ url: `${SITE.url}/oferta/${o.slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6 }));
+  return [...staticRoutes, ...horseRoutes, ...riderRoutes, ...stallionRoutes, ...legendRoutes, ...offerRoutes, ...eventRoutes, ...albumRoutes];
 }

@@ -15,7 +15,7 @@ export default function HorseCard({ horse, priority = false }: { horse: Horse; p
   return (
     <Link href={`/konie/${horse.slug}`} className="group block">
       <article className="flex h-full flex-col">
-        <div className="relative aspect-[4/5] overflow-hidden bg-beige-soft">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-beige-soft">
           {cover ? (
             <Image
               src={cover.url}

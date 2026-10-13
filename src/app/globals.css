@@ -33,8 +33,8 @@
 }
 
 @layer components {
-  .shell { @apply mx-auto w-full max-w-shell px-4 sm:px-6 lg:px-8; }
-  .shell-wide { @apply mx-auto w-full max-w-wide px-4 sm:px-6 lg:px-8; }
+  .shell { @apply mx-auto w-full max-w-shell px-3 sm:px-5 lg:px-6; }
+  .shell-wide { @apply mx-auto w-full max-w-wide px-3 sm:px-5 lg:px-6; }
 
   .eyebrow { @apply inline-flex items-center gap-2.5 text-[0.7rem] font-bold uppercase tracking-eyebrow text-brass-deep; }
   .eyebrow::before { content: ''; @apply block h-px w-7 bg-brass/70; }
@@ -107,9 +107,11 @@
 
   /* Animacje premium */
   .animate-rise { animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+  .animate-float { animation: floaty 5s ease-in-out infinite; }
   .animate-pop { animation: pop 0.5s cubic-bezier(0.22,1,0.36,1) both; }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   @keyframes pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 }
 
 @layer utilities {

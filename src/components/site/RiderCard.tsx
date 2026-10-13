@@ -6,7 +6,7 @@ export default function RiderCard({ rider }: { rider: Rider }) {
   return (
     <Link href={`/jezdcy/${rider.slug}`} className="group block animate-pop">
       <article className="card-app card-lift flex h-full flex-col">
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-[20px]">
           <Image src={rider.image.url} alt={rider.image.alt || rider.name} fill sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 25vw"
             className="object-cover transition-transform duration-700 ease-editorial group-hover:scale-[1.05]" />
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-navy/60 to-transparent" aria-hidden="true" />

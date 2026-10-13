@@ -185,7 +185,7 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-photo-scrim" aria-hidden="true" />
           <div className="shell-wide relative z-10 w-full pb-16 pt-[100px] text-ivory">
             <div className="max-w-2xl animate-fade-in">
-              <span className="hero-badge"><span className="dot" />Hodowla koni sportowych · od 1989</span>
+              <span className="hero-badge animate-float"><span className="dot" />Hodowla koni sportowych · od 1989</span>
               <span className="eyebrow mt-4 !text-brass-soft">{content.hero_eyebrow}</span>
               <h1 className="mt-4 text-balance font-display text-display-xl font-semibold !text-ivory text-shadow-hero">{content.hero_heading}</h1>
               <p className="prose-lux mt-4 max-w-xl !text-ivory/90 text-shadow-hero">{content.hero_description}</p>
