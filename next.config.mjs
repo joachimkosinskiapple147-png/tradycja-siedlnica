@@ -10,6 +10,8 @@ const supabaseHost = (() => {
 
 const nextConfig = {
   images: {
+    // Cloudflare Workers nie ma optymalizatora _next/image — bezpośrednie URL-e.
+    unoptimized: true,
     // Nowoczesne formaty — Next generuje AVIF/WebP i responsywne rozmiary automatycznie.
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
