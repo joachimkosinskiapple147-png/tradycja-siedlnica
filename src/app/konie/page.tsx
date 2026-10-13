@@ -10,9 +10,9 @@ import type { Horse } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 export const metadata = buildMetadata({
-  title: 'Konie na sprzedaż',
+  title: 'Konie',
   description:
-    'Katalog koni sportowych na sprzedaż z hodowli Tradycja Siedlnica. Filtruj po statusie, płci, rasie i przeznaczeniu.',
+    'Katalog koni z hodowli Tradycja Siedlnica. Filtruj po statusie, płci, rasie i przeznaczeniu.',
   path: '/konie',
 });
 
@@ -65,7 +65,7 @@ export default async function HorsesPage({
     <>
       <PageHero
         eyebrow="Katalog"
-        title="Konie na sprzedaż"
+        title="Konie"
         intro="Konie z własnej hodowli — sportowe, rekreacyjne i materiał hodowlany. Zapraszamy na prezentację na miejscu."
         image="/images/full/cyprian-sylwetka.webp"
         imageAlt="Koń na sprzedaż w stajni Tradycja Siedlnica"

@@ -1,11 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 // Czcionki hostowane lokalnie (bez zależności od Google w czasie działania).
-import '@fontsource/cormorant-garamond/latin-300.css';
-import '@fontsource/cormorant-garamond/latin-400.css';
+import '@fontsource/cormorant-garamond/latin-700.css';
 import '@fontsource/cormorant-garamond/latin-500.css';
 import '@fontsource/cormorant-garamond/latin-600.css';
-import '@fontsource/cormorant-garamond/latin-ext-300.css';
-import '@fontsource/cormorant-garamond/latin-ext-400.css';
+import '@fontsource/cormorant-garamond/latin-ext-700.css';
 import '@fontsource/cormorant-garamond/latin-ext-500.css';
 import '@fontsource/cormorant-garamond/latin-ext-600.css';
 import '@fontsource-variable/mulish/wght.css';

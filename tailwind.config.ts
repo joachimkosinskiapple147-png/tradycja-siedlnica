@@ -34,7 +34,7 @@ const config: Config = {
       },
       fontSize: {
         // Skala nagłówków — magazynowa, z dużymi krokami
-        'display-xl': ['clamp(2.75rem, 7vw, 6rem)', { lineHeight: '1.02', letterSpacing: '-0.01em' }],
+        'display-xl': ['clamp(2.4rem, 6vw, 4.6rem)', { lineHeight: '1.02', letterSpacing: '-0.01em' }],
         'display-lg': ['clamp(2.25rem, 5vw, 4rem)', { lineHeight: '1.06', letterSpacing: '-0.01em' }],
         'display-md': ['clamp(1.9rem, 3.6vw, 2.85rem)', { lineHeight: '1.1' }],
         'display-sm': ['clamp(1.5rem, 2.6vw, 2rem)', { lineHeight: '1.15' }],
@@ -49,7 +49,7 @@ const config: Config = {
         wide: '1440px',
       },
       spacing: {
-        section: 'clamp(4.5rem, 9vw, 8.5rem)',
+        section: 'clamp(2.25rem, 5vw, 4rem)',
       },
       boxShadow: {
         plate: '0 1px 0 0 rgba(16,26,36,0.06), 0 24px 60px -32px rgba(16,26,36,0.30)',

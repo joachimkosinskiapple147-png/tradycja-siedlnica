@@ -32,7 +32,7 @@ export function SectionHeader({
       </div>
       <h2
         className={cn(
-          'mt-4 text-display-md font-light text-balance',
+          'mt-4 text-display-md font-semibold text-balance',
           isLight ? 'text-ivory' : 'text-navy'
         )}
       >
@@ -77,7 +77,7 @@ export function PageHero({
       <div className="shell-wide relative z-10 pb-14 pt-10 text-ivory md:pb-20">
         {crumbs && <Breadcrumbs items={crumbs} tone="light" />}
         {eyebrow && <span className="eyebrow mt-6 text-brass-soft">{eyebrow}</span>}
-        <h1 className="mt-4 max-w-3xl text-display-lg font-light text-shadow-hero">{title}</h1>
+        <h1 className="mt-4 max-w-3xl text-display-lg font-semibold text-shadow-hero">{title}</h1>
         {intro && <p className="prose-lux mt-5 max-w-2xl text-ivory/85">{intro}</p>}
       </div>
     </section>
@@ -150,7 +150,7 @@ export function EmptyState({
         height={60}
         className="mx-auto h-14 w-14 rounded-full opacity-80 ring-1 ring-brass/40 ring-offset-2 ring-offset-cream"
       />
-      <h3 className="mt-6 font-display text-2xl text-navy">{title}</h3>
+      <h3 className="mt-6 font-display text-2xl font-semibold text-navy">{title}</h3>
       <Ornament className="mx-auto mt-4" />
       <p className="prose-lux mx-auto mt-3 text-charcoal/70">{message}</p>
       {action && (

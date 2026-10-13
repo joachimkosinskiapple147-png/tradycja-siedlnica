@@ -217,3 +217,45 @@ export interface ContactMessage {
   status: 'nowa' | 'przeczytana' | 'obsluzona';
   note?: string;
 }
+
+export interface Rider {
+  id: string;
+  slug: string;
+  name: string;
+  role: string;
+  specialty?: string;
+  experience?: string;
+  achievements?: string;
+  description?: string;
+  phone?: string;
+  image: HorseImage;
+  horse_slugs: string[];
+  featured: boolean;
+  position: number;
+  publish: PublishStatus;
+}
+
+export interface Stallion {
+  id: string;
+  slug: string;
+  name: string;
+  full_name?: string;
+  breed?: string;
+  birth_year?: number;
+  color?: string;
+  height_cm?: number;
+  pedigree?: Pedigree;
+  description?: string;
+  achievements?: string;
+  covering_price?: string;
+  semen?: string;
+  season?: string;
+  station?: string;
+  contact?: string;
+  image: HorseImage;
+  gallery: HorseImage[];
+  videos: HorseVideo[];
+  featured: boolean;
+  position: number;
+  publish: PublishStatus;
+}

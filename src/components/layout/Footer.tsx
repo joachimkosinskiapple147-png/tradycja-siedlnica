@@ -16,7 +16,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="bg-navy text-ivory/80">
-      <div className="shell-wide grid gap-12 py-16 md:grid-cols-12 md:py-20">
+      <div className="shell-wide grid gap-8 py-10 md:grid-cols-12 md:py-12">
         <div className="md:col-span-4">
           <div className="flex items-center gap-3">
             <Image
@@ -27,7 +27,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               className="h-12 w-12 rounded-full"
             />
             <div className="leading-none text-ivory">
-              <div className="font-display text-xl">Tradycja Siedlnica</div>
+              <div className="font-display text-xl font-semibold">Tradycja Siedlnica</div>
               <div className="mt-1 text-[0.62rem] uppercase tracking-eyebrow text-brass-soft">
                 Sylwester Kosiński · od {SITE.foundedYear}
               </div>

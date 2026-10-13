@@ -1,11 +1,11 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/lib/constants';
-import { getHorses, getEvents, getAlbums } from '@/lib/data/queries';
+import { getHorses, getEvents, getAlbums, getRiders, getStallions } from '@/lib/data/queries';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [horses, events, albums] = await Promise.all([getHorses(), getEvents(), getAlbums()]);
+  const [horses, events, albums, riders, stallions] = await Promise.all([getHorses(), getEvents(), getAlbums(), getRiders(), getStallions()]);
 
   const staticRoutes = [
     '',
@@ -14,6 +14,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/galeria',
     '/wydarzenia',
     '/oferta',
+    '/jezdcy',
+    '/stanowka',
     '/kontakt',
     '/polityka-prywatnosci',
   ].map((p) => ({
@@ -44,5 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.4,
   }));
 
-  return [...staticRoutes, ...horseRoutes, ...eventRoutes, ...albumRoutes];
+  const riderRoutes = riders.map((r) => ({ url: `${SITE.url}/jezdcy/${r.slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6 }));
+  const stallionRoutes = stallions.map((s) => ({ url: `${SITE.url}/stanowka/${s.slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8 }));
+  return [...staticRoutes, ...horseRoutes, ...riderRoutes, ...stallionRoutes, ...eventRoutes, ...albumRoutes];
 }

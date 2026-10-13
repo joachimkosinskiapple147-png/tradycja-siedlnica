@@ -1,3 +1,6 @@
+import { seedRiders } from './riders';
+import { seedStallions } from './stallions';
+import type { Rider, Stallion } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import type { Album, AboutContent, EventItem, HomeContent, Horse, Offer, SiteSettings, TimelineEntry } from '@/lib/types';
@@ -507,6 +510,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 }
 
 // ── Statystyki panelu ─────────────────────────────────────────────────────────
+export async function getExtendedDashboardStats() {
+  const [riders, stallions] = await Promise.all([getRiders({ includeUnpublished: true }), getStallions({ includeUnpublished: true })]);
+  return { riders: riders.length, stallions: stallions.length };
+}
+
 export async function getDashboardStats() {
   const [horses, events, albums, offers] = await Promise.all([
     getHorses({ includeUnpublished: true }),
@@ -572,3 +580,47 @@ export async function getUnreadMessagesCount(): Promise<number> {
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+// ── JEŹDŹCY ──
+export async function getRiders(opts: { includeUnpublished?: boolean } = {}): Promise<Rider[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      let query = supabase.from('riders').select('*');
+      if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
+      const { data, error } = await query.order('position', { ascending: true });
+      if (error) throw error;
+      if (data && data.length) return data as Rider[];
+    } catch (e) { console.error('[queries.getRiders] fallback:', e); }
+  }
+  const list = opts.includeUnpublished ? seedRiders : seedRiders.filter((r) => r.publish === 'opublikowany');
+  return [...list].sort((a, b) => a.position - b.position);
+}
+export async function getRiderBySlug(slug: string): Promise<Rider | null> {
+  const all = await getRiders({ includeUnpublished: true });
+  return all.find((r) => r.slug === slug) ?? null;
+}
+export async function getFeaturedRiders(limit = 4): Promise<Rider[]> {
+  const all = await getRiders();
+  return (all.filter((r) => r.featured).length ? all.filter((r) => r.featured) : all).slice(0, limit);
+}
+
+// ── STANÓWKA (ogiery kryjące) ──
+export async function getStallions(opts: { includeUnpublished?: boolean } = {}): Promise<Stallion[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      let query = supabase.from('stallions').select('*');
+      if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
+      const { data, error } = await query.order('position', { ascending: true });
+      if (error) throw error;
+      if (data && data.length) return data as Stallion[];
+    } catch (e) { console.error('[queries.getStallions] fallback:', e); }
+  }
+  const list = opts.includeUnpublished ? seedStallions : seedStallions.filter((s) => s.publish === 'opublikowany');
+  return [...list].sort((a, b) => a.position - b.position);
+}
+export async function getStallionBySlug(slug: string): Promise<Stallion | null> {
+  const all = await getStallions({ includeUnpublished: true });
+  return all.find((s) => s.slug === slug) ?? null;
+}

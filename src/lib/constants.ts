@@ -13,16 +13,11 @@ export const SITE = {
   phoneHref: '+48881293333',
   email: 'tradycja.siedlnica@gmail.com',
   address: {
-    label: 'Siedlnica, woj. wielkopolskie',
-    full: 'Siedlnica, 64-234 Siedlnica',
+    label: 'Siedlnica, woj. lubuskie',
+    full: 'Siedlnica, 67-410 Siedlnica',
   },
-  // URL mapy — do podmiany na dokładny w panelu (Ustawienia → Mapa).
   mapEmbedQuery: 'Siedlnica, Polska',
-  social: {
-    facebook: '',
-    instagram: '',
-    youtube: '',
-  },
+  social: { facebook: '', instagram: '', youtube: '' },
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tradycja-siedlnica.pl',
   locale: 'pl_PL',
 } as const;
@@ -31,6 +26,8 @@ export const NAV = [
   { label: 'Strona główna', href: '/' },
   { label: 'Nasza stajnia', href: '/nasza-stajnia' },
   { label: 'Konie', href: '/konie' },
+  { label: 'Jeźdźcy', href: '/jezdcy' },
+  { label: 'Stanówka', href: '/stanowka' },
   { label: 'Galeria', href: '/galeria' },
   { label: 'Wydarzenia', href: '/wydarzenia' },
   { label: 'Oferta', href: '/oferta' },
@@ -47,20 +44,12 @@ export const HORSE_STATUS = {
 export type HorseStatus = keyof typeof HORSE_STATUS;
 
 export const SEX_LABEL: Record<string, string> = {
-  ogier: 'Ogier',
-  klacz: 'Klacz',
-  walach: 'Wałach',
-  zrebak: 'Źrebak',
+  ogier: 'Ogier', klacz: 'Klacz', walach: 'Wałach', zrebak: 'Źrebak',
 };
 
 export const VIDEO_CATEGORY_LABEL: Record<string, string> = {
-  przejazd: 'Przejazd',
-  trening: 'Trening',
-  skoki: 'Skoki',
-  ujezdzenie: 'Ujeżdżenie',
-  zawody: 'Zawody',
-  prezentacja: 'Prezentacja',
-  inne: 'Inne',
+  przejazd: 'Przejazd', trening: 'Trening', skoki: 'Skoki',
+  ujezdzenie: 'Ujeżdżenie', zawody: 'Zawody', prezentacja: 'Prezentacja', inne: 'Inne',
 };
 
 export const VIDEO_CATEGORIES = Object.keys(VIDEO_CATEGORY_LABEL) as (keyof typeof VIDEO_CATEGORY_LABEL)[];

@@ -13,7 +13,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   hero_description: SITE.description,
   hero_image_url: '/images/full/hero.webp',
   hero_image_alt: 'Konie nad wodą o zmierzchu na pastwisku stajni Tradycja Siedlnica',
-  hero_button1_label: 'Zobacz konie na sprzedaż',
+  hero_button1_label: 'Zobacz konie',
   hero_button1_href: '/konie',
   hero_button2_label: 'Poznaj naszą stajnię',
   hero_button2_href: '/nasza-stajnia',

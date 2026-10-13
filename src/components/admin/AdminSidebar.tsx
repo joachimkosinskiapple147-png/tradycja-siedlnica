@@ -10,6 +10,8 @@ import { signOut } from '@/actions/admin';
 const LINKS = [
   { href: '/admin', label: 'Pulpit', exact: true },
   { href: '/admin/konie', label: 'Konie' },
+  { href: '/admin/jezdcy', label: 'Jeźdźcy' },
+  { href: '/admin/stanowka', label: 'Stanówka' },
   { href: '/admin/wydarzenia', label: 'Wydarzenia' },
   { href: '/admin/galeria', label: 'Galeria' },
   { href: '/admin/oferta', label: 'Oferta' },
@@ -59,7 +61,7 @@ export default function AdminSidebar({ email, unread }: { email?: string; unread
                     href={l.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      'flex items-center justify-between rounded-sm px-3 py-2.5 text-sm transition-colors',
+                      'flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors',
                       isActive(l.href, l.exact) ? 'bg-ivory/12 text-ivory' : 'text-ivory/70 hover:bg-ivory/8 hover:text-ivory'
                     )}
                   >

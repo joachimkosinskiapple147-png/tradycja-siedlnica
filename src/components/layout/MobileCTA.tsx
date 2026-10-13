@@ -6,29 +6,17 @@ import { usePathname } from 'next/navigation';
 export default function MobileCTA({ phoneHref }: { phoneHref: string }) {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
-
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy/10 bg-ivory/95 backdrop-blur-sm md:hidden">
-      <div className="grid grid-cols-2">
-        <a
-          href={`tel:${phoneHref}`}
-          className="flex items-center justify-center gap-2 border-r border-navy/10 py-3.5 text-[0.8rem] font-semibold uppercase tracking-wide2 text-navy"
-        >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M6.5 3.5 9 3.8l1.2 3.4-1.6 1.3a12 12 0 0 0 4.6 4.6l1.3-1.6 3.4 1.2.3 2.5a1.7 1.7 0 0 1-1.8 1.9A15 15 0 0 1 4.6 5.3 1.7 1.7 0 0 1 6.5 3.5Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-          </svg>
+    <div className="fixed inset-x-3 bottom-3 z-40 md:hidden">
+      <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 rounded-2xl border border-navy/10 bg-ivory/95 p-2 shadow-[0_16px_40px_-16px_rgba(16,26,36,0.5)] backdrop-blur-md">
+        <a href={`tel:${phoneHref}`} className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-[0.72rem] font-bold uppercase tracking-wide2 text-navy active:scale-[0.97]">
           Zadzwoń
         </a>
-        <Link
-          href="/konie"
-          className="flex items-center justify-center gap-2 bg-navy py-3.5 text-[0.8rem] font-semibold uppercase tracking-wide2 text-ivory"
-        >
-          Zapytaj o konia
+        <Link href="/konie" className="flex items-center justify-center rounded-xl bg-navy py-3 text-[0.72rem] font-bold uppercase tracking-wide2 text-ivory active:scale-[0.97]">
+          Konie
+        </Link>
+        <Link href="/stanowka" className="flex items-center justify-center rounded-xl bg-brass py-3 text-[0.72rem] font-bold uppercase tracking-wide2 text-navy active:scale-[0.97]">
+          Stanówka
         </Link>
       </div>
     </div>

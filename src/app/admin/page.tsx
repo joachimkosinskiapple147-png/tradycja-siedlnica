@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
-import { getDashboardStats, getUnreadMessagesCount } from '@/lib/data/queries';
+import { getDashboardStats, getUnreadMessagesCount, getExtendedDashboardStats } from '@/lib/data/queries';
 import AdminChrome, { AdminHeader } from '@/components/admin/AdminChrome';
 
 export const dynamic = 'force-dynamic';
@@ -9,32 +9,9 @@ function SetupScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy px-6 py-16 text-ivory">
       <div className="w-full max-w-2xl">
-        <span className="eyebrow text-brass-soft">Panel administracyjny</span>
-        <h1 className="mt-5 font-display text-display-md font-light">Najpierw skonfiguruj Supabase</h1>
-        <p className="prose-lux mt-5 text-ivory/75">
-          Panel wymaga połączenia z bazą danych i systemem logowania (Supabase). Strona publiczna działa
-          już teraz na danych przykładowych — panel włączy się po dodaniu kluczy.
-        </p>
-        <ol className="mt-8 space-y-4">
-          {[
-            'Załóż projekt na supabase.com i skopiuj URL oraz klucz „anon”.',
-            'Utwórz plik .env.local na podstawie .env.example i wklej klucze.',
-            'Uruchom migracje z supabase/schema.sql oraz (opcjonalnie) supabase/seed.sql.',
-            'Dodaj pierwszego użytkownika-administratora w panelu Supabase (Authentication → Users).',
-            'Zrestartuj aplikację — panel będzie dostępny pod /admin/login.',
-          ].map((step, i) => (
-            <li key={i} className="flex gap-4">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brass/50 font-display text-brass-soft">
-                {i + 1}
-              </span>
-              <span className="pt-1 text-ivory/80">{step}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-8 text-sm text-ivory/50">
-          Pełna instrukcja krok po kroku znajduje się w pliku <code className="text-brass-soft">README.md</code> oraz{' '}
-          <code className="text-brass-soft">supabase/README.md</code>.
-        </p>
+        <span className="eyebrow !text-brass-soft">Panel administracyjny</span>
+        <h1 className="mt-4 font-display text-display-md font-semibold !text-ivory">Najpierw skonfiguruj Supabase</h1>
+        <p className="prose-lux mt-4 !text-ivory/75">Panel wymaga bazy i logowania. Strona działa na danych przykładowych — panel włączy się po kluczach.</p>
         <Link href="/" className="btn-ghost-light mt-8">← Wróć na stronę</Link>
       </div>
     </div>
@@ -43,44 +20,82 @@ function SetupScreen() {
 
 export default async function AdminDashboard() {
   if (!isSupabaseConfigured) return <SetupScreen />;
-
-  const [stats, unread] = await Promise.all([getDashboardStats(), getUnreadMessagesCount()]);
+  const [stats, unread, ext] = await Promise.all([getDashboardStats(), getUnreadMessagesCount(), getExtendedDashboardStats()]);
 
   const cards = [
-    { label: 'Konie łącznie', value: stats.horsesTotal, href: '/admin/konie' },
-    { label: 'Na sprzedaż', value: stats.horsesForSale, href: '/admin/konie?status=na_sprzedaz' },
-    { label: 'Sprzedane', value: stats.horsesSold, href: '/admin/konie?status=sprzedany' },
-    { label: 'Nowe wiadomości', value: unread, href: '/admin/wiadomosci' },
-    { label: 'Wydarzenia', value: stats.events, href: '/admin/wydarzenia' },
-    { label: 'Albumy galerii', value: stats.albums, href: '/admin/galeria' },
-    { label: 'Pozycje oferty', value: stats.offers, href: '/admin/oferta' },
+    { label: 'Konie łącznie', value: stats.horsesTotal, href: '/admin/konie', hint: 'sprzedaż + hodowla' },
+    { label: 'Na sprzedaż', value: stats.horsesForSale, href: '/admin/konie?status=na_sprzedaz', hint: 'aktywne oferty' },
+    { label: 'Sprzedane', value: stats.horsesSold, href: '/admin/konie?status=sprzedany', hint: 'archiwum' },
+    { label: 'Jeźdźcy', value: ext.riders, href: '/admin/jezdcy', hint: 'profile zespołu' },
+    { label: 'Stanówka', value: ext.stallions, href: '/admin/stanowka', hint: 'ogiery kryjące' },
+    { label: 'Nowe wiadomości', value: unread, href: '/admin/wiadomosci', hint: 'skrzynka' },
+    { label: 'Wydarzenia', value: stats.events, href: '/admin/wydarzenia', hint: 'kalendarz' },
+    { label: 'Albumy', value: stats.albums, href: '/admin/galeria', hint: 'zdjęcia' },
+  ];
+
+  const sections = [
+    { t: 'Konie', d: 'Dodawaj, edytuj statusy i ceny', href: '/admin/konie', cta: 'Konie' },
+    { t: 'Jeźdźcy', d: 'Profile zespołu: zdjęcia, opisy, konie', href: '/admin/jezdcy', cta: 'Jeźdźcy' },
+    { t: 'Stanówka', d: 'Ogiery, cennik krycia, nasienie', href: '/admin/stanowka', cta: 'Stanówka' },
+    { t: 'Wydarzenia', d: 'Dni otwarte, zawody, relacje', href: '/admin/wydarzenia', cta: 'Wydarzenia' },
+    { t: 'Galeria', d: 'Albumy i zdjęcia', href: '/admin/galeria', cta: 'Galeria' },
+    { t: 'Oferta', d: 'Usługi: trening, pensjonat, jazdy', href: '/admin/oferta', cta: 'Oferta' },
+    { t: 'Strona główna', d: 'Hero, statystyki, wyróżnione', href: '/admin/strona-glowna', cta: 'Edytuj' },
+    { t: 'Nasza stajnia', d: 'Historia i oś czasu', href: '/admin/nasza-stajnia', cta: 'Edytuj' },
+    { t: 'Wiadomości', d: unread ? unread + ' nieprzeczytanych' : 'Skrzynka pusta', href: '/admin/wiadomosci', cta: 'Skrzynka' },
+    { t: 'Ustawienia', d: 'Telefon, adres, SEO, social', href: '/admin/ustawienia', cta: 'Ustawienia' },
   ];
 
   return (
     <AdminChrome>
-      <AdminHeader title="Pulpit" subtitle="Przegląd zawartości serwisu" />
-      <div className="p-6 lg:p-10">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <AdminHeader title="Pulpit" subtitle="Sterowanie stroną — konie, jeźdźcy, stanówka, treści" />
+      <div className="space-y-5 p-4 sm:p-6 lg:p-8">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {cards.map((c) => (
-            <Link key={c.label} href={c.href} className="group border border-navy/12 bg-ivory p-6 transition-colors hover:border-navy/30">
-              <div className="font-display text-5xl font-light text-navy">{c.value}</div>
-              <div className="mt-2 text-[0.72rem] uppercase tracking-wide2 text-charcoal/55 group-hover:text-brass-deep">
-                {c.label}
-              </div>
+            <Link key={c.label} href={c.href} className="card-app card-lift !rounded-2xl p-4">
+              <div className="font-display text-4xl font-semibold text-navy">{c.value}</div>
+              <div className="mt-1 text-[0.7rem] font-bold uppercase tracking-wide2 text-navy">{c.label}</div>
+              <div className="text-[0.74rem] font-medium text-charcoal/55">{c.hint}</div>
             </Link>
           ))}
         </div>
 
-        <div className="mt-8 border border-navy/12 bg-ivory p-6">
-          <h2 className="font-display text-xl text-navy">Szybkie akcje</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/admin/konie/nowy" className="btn-primary">Dodaj konia</Link>
-            <Link href="/admin/wydarzenia/nowe" className="btn-ghost">Dodaj wydarzenie</Link>
-            <Link href="/admin/galeria/nowy" className="btn-ghost">Dodaj album</Link>
-            <Link href="/admin/oferta/nowa" className="btn-ghost">Dodaj ofertę</Link>
-            <Link href="/admin/wiadomosci" className="btn-ghost">Skrzynka wiadomości</Link>
-            <Link href="/admin/strona-glowna" className="btn-ghost">Edytuj stronę główną</Link>
-            <Link href="/admin/ustawienia" className="btn-ghost">Ustawienia</Link>
+        <div className="card-app !rounded-2xl p-4 sm:p-5">
+          <h2 className="font-display text-xl font-semibold text-navy">Szybkie akcje</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href="/admin/konie/nowy" className="btn-primary !py-2.5">+ Koń</Link>
+            <Link href="/admin/jezdcy" className="btn-brass !py-2.5">+ Jeździec</Link>
+            <Link href="/admin/stanowka" className="btn-brass !py-2.5">+ Ogier</Link>
+            <Link href="/admin/wydarzenia/nowe" className="btn-ghost !py-2.5">+ Wydarzenie</Link>
+            <Link href="/admin/galeria/nowy" className="btn-ghost !py-2.5">+ Album</Link>
+            <Link href="/admin/oferta/nowa" className="btn-ghost !py-2.5">+ Oferta</Link>
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {sections.map((s) => (
+            <div key={s.t} className="card-app card-lift !rounded-2xl p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-lg font-semibold text-navy">{s.t}</h3>
+                  <p className="mt-0.5 text-[0.8rem] font-medium text-charcoal/60">{s.d}</p>
+                </div>
+                <Link href={s.href} className="btn-ghost shrink-0 !px-3.5 !py-2 text-[0.7rem]">{s.cta} →</Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="card-app !rounded-2xl border-brass/30 !bg-brass/8 p-4">
+          <h3 className="text-[0.72rem] font-bold uppercase tracking-wide2 text-brass-deep">Konto administratora</h3>
+          <p className="mt-1 text-[0.84rem] font-medium text-charcoal/75">
+            Administratorów dodajesz w Supabase → Authentication → Users. Każdy admin loguje się mailem i hasłem pod /admin/login.
+            Nowe działy Jeźdźcy i Stanówka korzystają z tabel <code>riders</code> i <code>stallions</code> — migracja w supabase/migrations/20261013_riders_stallions.sql.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href="/admin/ustawienia" className="btn-ghost !py-2">Ustawienia</Link>
+            <Link href="/admin/wiadomosci" className="btn-ghost !py-2">Wiadomości{unread ? ' (' + unread + ')' : ''}</Link>
+            <Link href="/" className="btn-ghost !py-2">Podgląd strony →</Link>
           </div>
         </div>
       </div>
