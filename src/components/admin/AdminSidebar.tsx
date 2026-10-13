@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/admin/konie', label: 'Konie' },
   { href: '/admin/jezdcy', label: 'Jeźdźcy' },
   { href: '/admin/stanowka', label: 'Stanówka' },
+  { href: '/admin/legendy', label: 'Legendy' },
   { href: '/admin/wydarzenia', label: 'Wydarzenia' },
   { href: '/admin/galeria', label: 'Galeria' },
   { href: '/admin/oferta', label: 'Oferta' },

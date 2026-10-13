@@ -1,6 +1,7 @@
 import { seedRiders } from './riders';
 import { seedStallions } from './stallions';
-import type { Rider, Stallion } from '@/lib/types';
+import { seedLegends } from './legends';
+import type { Rider, Stallion, Legend } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import type { Album, AboutContent, EventItem, HomeContent, Horse, Offer, SiteSettings, TimelineEntry } from '@/lib/types';
@@ -511,8 +512,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
 // ── Statystyki panelu ─────────────────────────────────────────────────────────
 export async function getExtendedDashboardStats() {
-  const [riders, stallions] = await Promise.all([getRiders({ includeUnpublished: true }), getStallions({ includeUnpublished: true })]);
-  return { riders: riders.length, stallions: stallions.length };
+  const [riders, stallions, legends] = await Promise.all([getRiders({ includeUnpublished: true }), getStallions({ includeUnpublished: true }), getLegends({ includeUnpublished: true })]);
+  return { riders: riders.length, stallions: stallions.length, legends: legends.length };
 }
 
 export async function getDashboardStats() {
@@ -623,4 +624,23 @@ export async function getStallions(opts: { includeUnpublished?: boolean } = {}):
 export async function getStallionBySlug(slug: string): Promise<Stallion | null> {
   const all = await getStallions({ includeUnpublished: true });
   return all.find((s) => s.slug === slug) ?? null;
+}
+
+export async function getLegends(opts: { includeUnpublished?: boolean } = {}): Promise<Legend[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createClient();
+      let query = supabase.from('legends').select('*');
+      if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
+      const { data, error } = await query.order('position', { ascending: true });
+      if (error) throw error;
+      if (data && data.length) return data as Legend[];
+    } catch (e) { console.error('[queries.getLegends] fallback:', e); }
+  }
+  const list = opts.includeUnpublished ? seedLegends : seedLegends.filter((l) => l.publish === 'opublikowany');
+  return [...list].sort((a, b) => a.position - b.position);
+}
+export async function getLegendBySlug(slug: string): Promise<Legend | null> {
+  const all = await getLegends({ includeUnpublished: true });
+  return all.find((l) => l.slug === slug) ?? null;
 }

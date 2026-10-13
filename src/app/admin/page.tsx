@@ -28,6 +28,7 @@ export default async function AdminDashboard() {
     { label: 'Sprzedane', value: stats.horsesSold, href: '/admin/konie?status=sprzedany', hint: 'archiwum' },
     { label: 'Jeźdźcy', value: ext.riders, href: '/admin/jezdcy', hint: 'profile zespołu' },
     { label: 'Stanówka', value: ext.stallions, href: '/admin/stanowka', hint: 'ogiery kryjące' },
+    { label: 'Legendy', value: ext.legends, href: '/admin/legendy', hint: 'hall of fame' },
     { label: 'Nowe wiadomości', value: unread, href: '/admin/wiadomosci', hint: 'skrzynka' },
     { label: 'Wydarzenia', value: stats.events, href: '/admin/wydarzenia', hint: 'kalendarz' },
     { label: 'Albumy', value: stats.albums, href: '/admin/galeria', hint: 'zdjęcia' },
@@ -37,6 +38,7 @@ export default async function AdminDashboard() {
     { t: 'Konie', d: 'Dodawaj, edytuj statusy i ceny', href: '/admin/konie', cta: 'Konie' },
     { t: 'Jeźdźcy', d: 'Profile zespołu: zdjęcia, opisy, konie', href: '/admin/jezdcy', cta: 'Jeźdźcy' },
     { t: 'Stanówka', d: 'Ogiery, cennik krycia, nasienie', href: '/admin/stanowka', cta: 'Stanówka' },
+    { t: 'Legendy', d: 'Wyhodowane u nas, dziś w świecie', href: '/admin/legendy', cta: 'Legendy' },
     { t: 'Wydarzenia', d: 'Dni otwarte, zawody, relacje', href: '/admin/wydarzenia', cta: 'Wydarzenia' },
     { t: 'Galeria', d: 'Albumy i zdjęcia', href: '/admin/galeria', cta: 'Galeria' },
     { t: 'Oferta', d: 'Usługi: trening, pensjonat, jazdy', href: '/admin/oferta', cta: 'Oferta' },
@@ -66,6 +68,7 @@ export default async function AdminDashboard() {
             <Link href="/admin/konie/nowy" className="btn-primary !py-2.5">+ Koń</Link>
             <Link href="/admin/jezdcy" className="btn-brass !py-2.5">+ Jeździec</Link>
             <Link href="/admin/stanowka" className="btn-brass !py-2.5">+ Ogier</Link>
+            <Link href="/admin/legendy" className="btn-brass !py-2.5">★ Legenda</Link>
             <Link href="/admin/wydarzenia/nowe" className="btn-ghost !py-2.5">+ Wydarzenie</Link>
             <Link href="/admin/galeria/nowy" className="btn-ghost !py-2.5">+ Album</Link>
             <Link href="/admin/oferta/nowa" className="btn-ghost !py-2.5">+ Oferta</Link>

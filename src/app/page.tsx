@@ -3,7 +3,7 @@ import Image from 'next/image';
 import {
   getAlbums, getFeaturedHorses, getHomeContent, getHorseBySlug, getHorses,
   getOffers, getSiteSettings, getUpcomingEvents, getPastEvents,
-  getFeaturedRiders, getStallions,
+  getFeaturedRiders, getStallions, getLegends,
 } from '@/lib/data/queries';
 import { STANOWKA_INFO } from '@/lib/data/stallions';
 import Reveal from '@/components/ui/Reveal';
@@ -11,6 +11,7 @@ import { SectionHeader, Ornament } from '@/components/ui/Primitives';
 import HorseCard from '@/components/site/HorseCard';
 import RiderCard from '@/components/site/RiderCard';
 import StallionCard from '@/components/site/StallionCard';
+import LegendCard from '@/components/site/LegendCard';
 import { EventCard, OfferCard, GalleryAlbumCard } from '@/components/site/Cards';
 import VideoEmbed from '@/components/site/VideoEmbed';
 import type { EventItem, Album } from '@/lib/types';
@@ -18,9 +19,9 @@ import type { EventItem, Album } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [content, settings, offers, upcoming, past, albums, allHorses, riders, stallions] = await Promise.all([
+  const [content, settings, offers, upcoming, past, albums, allHorses, riders, stallions, legends] = await Promise.all([
     getHomeContent(), getSiteSettings(), getOffers(), getUpcomingEvents(), getPastEvents(), getAlbums(), getHorses(),
-    getFeaturedRiders(4), getStallions(),
+    getFeaturedRiders(4), getStallions(), getLegends(),
   ]);
 
   const featured = await getFeaturedHorses(3, content.featured_horse_ids);
@@ -219,6 +220,21 @@ export default async function HomePage() {
           </Reveal>
           <div className="mt-7 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
             {riders.map((r, i) => (<Reveal key={r.id} delay={(i % 4) * 70}><RiderCard rider={r} /></Reveal>))}
+          </div>
+        </div>
+      </section>
+
+      {/* LEGENDY teaser */}
+      <section className="bg-cream py-section">
+        <div className="shell">
+          <Reveal>
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <SectionHeader eyebrow="Wyhodowane u nas" title="Nasze legendy" index="05" intro="Konie z naszej hodowli, dziś w sporcie i hodowli." />
+              <Link href="/legendy" className="btn-ghost self-start !py-2.5 md:self-auto">Wszystkie legendy</Link>
+            </div>
+          </Reveal>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+            {legends.slice(0, 3).map((l, i) => (<Reveal key={l.id} delay={(i % 3) * 70}><LegendCard legend={l} /></Reveal>))}
           </div>
         </div>
       </section>

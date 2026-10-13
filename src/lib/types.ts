@@ -259,3 +259,21 @@ export interface Stallion {
   position: number;
   publish: PublishStatus;
 }
+
+export interface Legend {
+  id: string;
+  slug: string;
+  name: string;
+  breed?: string;
+  birth_year?: number;
+  color?: string;
+  years_at_stable?: string;
+  where_now?: string;
+  achievements?: string;
+  story?: string;
+  image: HorseImage;
+  gallery: HorseImage[];
+  featured: boolean;
+  position: number;
+  publish: PublishStatus;
+}

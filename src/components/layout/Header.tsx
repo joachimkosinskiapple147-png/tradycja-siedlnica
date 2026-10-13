@@ -53,7 +53,7 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'whitespace-nowrap rounded-full px-2.5 py-2 text-[0.74rem] font-semibold uppercase tracking-wide2 transition-all duration-300 xl:px-3',
+                    'whitespace-nowrap rounded-full px-2 py-1.5 text-[0.68rem] font-semibold uppercase tracking-wide2 transition-all duration-300 xl:px-2.5',
                     hot
                       ? 'bg-brass/15 text-brass-deep ring-1 ring-brass/40 hover:bg-brass hover:text-ivory'
                       : active

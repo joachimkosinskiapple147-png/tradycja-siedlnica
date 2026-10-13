@@ -28,6 +28,7 @@ export const NAV = [
   { label: 'Konie', href: '/konie' },
   { label: 'Jeźdźcy', href: '/jezdcy' },
   { label: 'Stanówka', href: '/stanowka' },
+  { label: 'Legendy', href: '/legendy' },
   { label: 'Galeria', href: '/galeria' },
   { label: 'Wydarzenia', href: '/wydarzenia' },
   { label: 'Oferta', href: '/oferta' },
