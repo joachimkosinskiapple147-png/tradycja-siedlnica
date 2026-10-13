@@ -45,11 +45,11 @@ export default async function HomePage() {
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
               <span className="eyebrow eyebrow--center justify-center text-brass-deep">{content.intro_eyebrow}</span>
-              <p className="mt-4 font-display text-display-sm font-semibold leading-tight text-navy">{content.intro_text}</p>
+              <p className="mt-3 font-display text-display-sm font-semibold leading-tight text-navy">{content.intro_text}</p>
             </div>
           </Reveal>
           <Reveal delay={80}>
-            <div className="mt-8 grid grid-cols-2 gap-3 border-y border-navy/10 py-6 md:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 border-y border-navy/10 py-4 md:grid-cols-4">
               {content.stats.map((s) => (
                 <div key={s.label} className="chip-stat card-lift">
                   <div className="font-display text-4xl font-semibold tabular-nums text-navy md:text-5xl">{s.number}</div>

@@ -43,7 +43,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
     { key: 'horses', visible: true },
     { key: 'about', visible: true },
     { key: 'offers', visible: true },
-    { key: 'events', visible: true },
+    { key: 'events', visible: false },
     { key: 'gallery', visible: true },
     { key: 'video', visible: true },
     { key: 'contact_cta', visible: true },
