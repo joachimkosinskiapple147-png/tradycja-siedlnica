@@ -612,7 +612,7 @@ export async function getRiders(opts: { includeUnpublished?: boolean } = {}): Pr
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      return (data ?? []).map(mapRiderRow);
+      if (data && data.length) return data.map(mapRiderRow);
     } catch (e) { console.error('[queries.getRiders] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedRiders : seedRiders.filter((r) => r.publish === 'opublikowany');
@@ -678,7 +678,7 @@ export async function getStallions(opts: { includeUnpublished?: boolean } = {}):
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      return (data ?? []).map(mapStallionRow);
+      if (data && data.length) return data.map(mapStallionRow);
     } catch (e) { console.error('[queries.getStallions] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedStallions : seedStallions.filter((s) => s.publish === 'opublikowany');
@@ -730,7 +730,7 @@ export async function getLegends(opts: { includeUnpublished?: boolean } = {}): P
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      return (data ?? []).map(mapLegendRow);
+      if (data && data.length) return data.map(mapLegendRow);
     } catch (e) { console.error('[queries.getLegends] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedLegends : seedLegends.filter((l) => l.publish === 'opublikowany');
