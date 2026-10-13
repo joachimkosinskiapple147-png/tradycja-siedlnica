@@ -4,7 +4,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import { getHorseBySlug, getSimilarHorses, getSiteSettings } from '@/lib/data/queries';
 import { SEX_LABEL } from '@/lib/constants';
-import { buildMetadata, JsonLd, breadcrumbJsonLd } from '@/lib/seo';
+import { buildMetadata } from '@/lib/seo';
 import { ageFromYear, formatDatePl } from '@/lib/utils';
 import { Breadcrumbs, StatusPill } from '@/components/ui/Primitives';
 import HorseGallery from '@/components/site/HorseGallery';
