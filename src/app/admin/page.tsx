@@ -93,7 +93,7 @@ export default async function AdminDashboard() {
           <h3 className="text-[0.72rem] font-bold uppercase tracking-wide2 text-brass-deep">Konto administratora</h3>
           <p className="mt-1 text-[0.84rem] font-medium text-charcoal/75">
             Administratorów dodajesz w Supabase → Authentication → Users. Każdy admin loguje się mailem i hasłem pod /admin/login.
-            Nowe działy Jeźdźcy i Stanówka korzystają z tabel <code>riders</code> i <code>stallions</code> — migracja w supabase/migrations/20261013_riders_stallions.sql.
+            Działy Jeźdźcy, Stanówka i Legendy mają pełny CRUD w panelu (tabele <code>riders</code>, <code>stallions</code>, <code>legends</code> — schemat w supabase/schema.sql, polityki zapisu w supabase/migrations/20261013_admin_rsl.sql).
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link href="/admin/ustawienia" className="btn-ghost !py-2">Ustawienia</Link>

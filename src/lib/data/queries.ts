@@ -583,6 +583,27 @@ export async function getUnreadMessagesCount(): Promise<number> {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ── JEŹDŹCY ──
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function mapRiderRow(row: any): Rider {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    role: row.role ?? '',
+    specialty: row.specialty ?? undefined,
+    experience: row.experience ?? undefined,
+    achievements: row.achievements ?? undefined,
+    description: row.description ?? undefined,
+    phone: row.phone ?? undefined,
+    image: row.image_url
+      ? { id: `${row.id}-img`, url: row.image_url, alt: row.image_alt ?? row.name, position: 0 }
+      : { id: `${row.id}-img`, url: '/images/full/hero.webp', alt: row.name, position: 0 },
+    horse_slugs: row.horse_slugs ?? [],
+    featured: row.featured ?? false,
+    position: row.position ?? 0,
+    publish: row.publish ?? 'szkic',
+  };
+}
 export async function getRiders(opts: { includeUnpublished?: boolean } = {}): Promise<Rider[]> {
   if (isSupabaseConfigured) {
     try {
@@ -591,7 +612,7 @@ export async function getRiders(opts: { includeUnpublished?: boolean } = {}): Pr
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      if (data && data.length) return data as Rider[];
+      return (data ?? []).map(mapRiderRow);
     } catch (e) { console.error('[queries.getRiders] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedRiders : seedRiders.filter((r) => r.publish === 'opublikowany');
@@ -601,12 +622,54 @@ export async function getRiderBySlug(slug: string): Promise<Rider | null> {
   const all = await getRiders({ includeUnpublished: true });
   return all.find((r) => r.slug === slug) ?? null;
 }
+export async function getRiderById(id: string): Promise<Rider | null> {
+  if (!isSupabaseConfigured) return seedRiders.find((r) => r.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('riders').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapRiderRow(data) : null;
+  } catch (e) {
+    console.error('[queries.getRiderById]', e);
+    return null;
+  }
+}
 export async function getFeaturedRiders(limit = 4): Promise<Rider[]> {
   const all = await getRiders();
   return (all.filter((r) => r.featured).length ? all.filter((r) => r.featured) : all).slice(0, limit);
 }
 
 // ── STANÓWKA (ogiery kryjące) ──
+function mapStallionRow(row: any): Stallion {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    full_name: row.full_name ?? undefined,
+    breed: row.breed ?? undefined,
+    birth_year: row.birth_year ?? undefined,
+    color: row.color ?? undefined,
+    height_cm: row.height_cm ?? undefined,
+    pedigree:
+      row.sire || row.dam || row.pedigree_notes
+        ? { sire: row.sire ?? undefined, dam: row.dam ?? undefined, notes: row.pedigree_notes ?? undefined }
+        : undefined,
+    description: row.description ?? undefined,
+    achievements: row.achievements ?? undefined,
+    covering_price: row.covering_price ?? undefined,
+    semen: row.semen ?? undefined,
+    season: row.season ?? undefined,
+    station: row.station ?? undefined,
+    image: row.image_url
+      ? { id: `${row.id}-img`, url: row.image_url, alt: row.image_alt ?? row.name, position: 0 }
+      : { id: `${row.id}-img`, url: '/images/full/hero.webp', alt: row.name, position: 0 },
+    gallery: [],
+    videos: [],
+    featured: row.featured ?? false,
+    position: row.position ?? 0,
+    publish: row.publish ?? 'szkic',
+  };
+}
 export async function getStallions(opts: { includeUnpublished?: boolean } = {}): Promise<Stallion[]> {
   if (isSupabaseConfigured) {
     try {
@@ -615,7 +678,7 @@ export async function getStallions(opts: { includeUnpublished?: boolean } = {}):
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      if (data && data.length) return data as Stallion[];
+      return (data ?? []).map(mapStallionRow);
     } catch (e) { console.error('[queries.getStallions] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedStallions : seedStallions.filter((s) => s.publish === 'opublikowany');
@@ -625,7 +688,40 @@ export async function getStallionBySlug(slug: string): Promise<Stallion | null> 
   const all = await getStallions({ includeUnpublished: true });
   return all.find((s) => s.slug === slug) ?? null;
 }
+export async function getStallionById(id: string): Promise<Stallion | null> {
+  if (!isSupabaseConfigured) return seedStallions.find((s) => s.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('stallions').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapStallionRow(data) : null;
+  } catch (e) {
+    console.error('[queries.getStallionById]', e);
+    return null;
+  }
+}
 
+function mapLegendRow(row: any): Legend {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    breed: row.breed ?? undefined,
+    birth_year: row.birth_year ?? undefined,
+    color: row.color ?? undefined,
+    years_at_stable: row.years_at_stable ?? undefined,
+    where_now: row.where_now ?? undefined,
+    achievements: row.achievements ?? undefined,
+    story: row.story ?? undefined,
+    image: row.image_url
+      ? { id: `${row.id}-img`, url: row.image_url, alt: row.image_alt ?? row.name, position: 0 }
+      : { id: `${row.id}-img`, url: '/images/full/hero.webp', alt: row.name, position: 0 },
+    gallery: [],
+    featured: row.featured ?? false,
+    position: row.position ?? 0,
+    publish: row.publish ?? 'opublikowany',
+  };
+}
 export async function getLegends(opts: { includeUnpublished?: boolean } = {}): Promise<Legend[]> {
   if (isSupabaseConfigured) {
     try {
@@ -634,7 +730,7 @@ export async function getLegends(opts: { includeUnpublished?: boolean } = {}): P
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      if (data && data.length) return data as Legend[];
+      return (data ?? []).map(mapLegendRow);
     } catch (e) { console.error('[queries.getLegends] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedLegends : seedLegends.filter((l) => l.publish === 'opublikowany');
@@ -643,4 +739,16 @@ export async function getLegends(opts: { includeUnpublished?: boolean } = {}): P
 export async function getLegendBySlug(slug: string): Promise<Legend | null> {
   const all = await getLegends({ includeUnpublished: true });
   return all.find((l) => l.slug === slug) ?? null;
+}
+export async function getLegendById(id: string): Promise<Legend | null> {
+  if (!isSupabaseConfigured) return seedLegends.find((l) => l.id === id) ?? null;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('legends').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapLegendRow(data) : null;
+  } catch (e) {
+    console.error('[queries.getLegendById]', e);
+    return null;
+  }
 }
