@@ -46,7 +46,6 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
           <nav aria-label="Główne" className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex">
             {NAV.slice(1).filter((item) => item.label !== 'Konie' && item.label !== 'Stanówka').map((item) => {
               const active = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
-              const hot = item.label === 'Stanówka';
               return (
                 <Link
                   key={item.href}
@@ -54,11 +53,9 @@ export default function Header({ phone, phoneHref }: { phone: string; phoneHref:
                   aria-current={active ? 'page' : undefined}
                   className={cn(
                     'whitespace-nowrap rounded-full px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-wide2 transition-all duration-300',
-                    hot
-                      ? 'bg-brass/15 text-brass-deep ring-1 ring-brass/40 hover:bg-brass hover:text-ivory'
-                      : active
-                        ? 'bg-navy text-ivory'
-                        : 'text-navy/70 hover:bg-navy/5 hover:text-navy'
+                    active
+                      ? 'bg-navy text-ivory'
+                      : 'text-navy/70 hover:bg-navy/5 hover:text-navy'
                   )}
                 >
                   {item.label}
