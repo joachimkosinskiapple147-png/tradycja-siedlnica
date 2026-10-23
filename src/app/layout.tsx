@@ -17,6 +17,12 @@ import MobileCTA from '@/components/layout/MobileCTA';
 
 export const dynamic = 'force-dynamic';
 
+// Panel CMS + treści z bazy muszą być zawsze świeże: żadnego cache'owania
+// wyników fetch (supabase-js) z czasu builda ani pomiędzy żądaniami.
+// Bez tego edycja w /admin nie byłaby widoczna od razu, a po wdrożeniu
+// strona mogłaby pokazywać stan tabel sprzed builda.
+export const fetchCache = 'force-no-store';
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const title = settings.seo_title || SITE.name;
