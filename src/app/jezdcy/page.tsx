@@ -1,6 +1,6 @@
 import { getRiders } from '@/lib/data/queries';
 import { buildMetadata } from '@/lib/seo';
-import { PageHero } from '@/components/ui/Primitives';
+import { PageHero, EmptyState } from '@/components/ui/Primitives';
 import RiderCard from '@/components/site/RiderCard';
 import Reveal from '@/components/ui/Reveal';
 
@@ -17,13 +17,20 @@ export default async function RidersPage() {
       <section className="bg-ivory py-section">
         <div className="shell">
           <div className="segment mb-6 w-fit">
-            <span className="on px-4 py-2">Wszyscy · {riders.length}</span>
+            <span className="on px-4 py-2">Wszyscy{riders.length > 0 ? ` · ${riders.length}` : ''}</span>
             <a href="/konie">Konie</a>
             <a href="/stanowka">Stanówka</a>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-5">
             {riders.map((r, i) => (<Reveal key={r.id} delay={(i % 4) * 70}><RiderCard rider={r} /></Reveal>))}
           </div>
+          {riders.length === 0 && (
+            <EmptyState
+              title="Zespół już wkrótce"
+              message="Profile jeźdźców są w przygotowaniu. Zadzwoń lub napisz — chętnie opowiemy o naszym zespole."
+              action={{ label: 'Kontakt', href: '/kontakt' }}
+            />
+          )}
         </div>
       </section>
     </>

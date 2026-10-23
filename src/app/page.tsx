@@ -104,7 +104,7 @@ export default async function HomePage() {
         </div>
       </section>
     ),
-    offers: (
+    offers: offers.length > 0 && (
       <section key="offers" className="bg-ivory py-section">
         <div className="shell">
           <Reveal><SectionHeader eyebrow="Czym się zajmujemy" title="Oferta" align="center" index="02" /></Reveal>
@@ -195,7 +195,7 @@ export default async function HomePage() {
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Link href="/jezdcy" className="chip !border-ivory/30 !bg-ivory/10 !text-ivory">Jeźdźcy →</Link>
-                <Link href="/stanowka" className="chip !border-brass/50 !bg-brass/20 !text-brass-soft">Stanówka: {stallions.length} ogiery →</Link>
+                {stallions.length > 0 && (<Link href="/stanowka" className="chip !border-brass/50 !bg-brass/20 !text-brass-soft">Stanówka: {stallions.length} ogiery →</Link>)}
               </div>
               <dl className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.7rem] font-bold uppercase tracking-wide2 text-ivory/70">
                 <div className="flex items-center gap-2"><span className="inline-block h-1 w-1 rounded-full bg-brass-soft" />35+ lat hodowli</div>
@@ -210,6 +210,7 @@ export default async function HomePage() {
       {order.map((key) => sectionRenderers[key] ?? null)}
 
       {/* JEŹDŹCY teaser */}
+      {riders.length > 0 && (
       <section className="bg-ivory py-section">
         <div className="shell">
           <Reveal>
@@ -223,8 +224,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* LEGENDY teaser */}
+      {legends.length > 0 && (
       <section className="bg-cream py-section">
         <div className="shell">
           <Reveal>
@@ -238,6 +241,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* STANÓWKA teaser */}
       <section className="bg-navy py-section text-ivory">
@@ -246,7 +250,7 @@ export default async function HomePage() {
             <div className="card-app !border-ivory/15 !bg-ivory/5 flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <span className="eyebrow !text-brass-soft">Hodowla · krycie</span>
-                <h2 className="mt-2 font-display text-display-sm font-semibold !text-ivory">{STANOWKA_INFO.title} — {stallions.length} ogiery</h2>
+                <h2 className="mt-2 font-display text-display-sm font-semibold !text-ivory">{STANOWKA_INFO.title}{stallions.length > 0 ? ` — ${stallions.length} ogiery` : ''}</h2>
                 <p className="mt-2 max-w-xl text-[0.92rem] font-medium text-ivory/75">{STANOWKA_INFO.intro}</p>
               </div>
               <div className="flex shrink-0 flex-wrap gap-2">
@@ -255,9 +259,11 @@ export default async function HomePage() {
               </div>
             </div>
           </Reveal>
+          {stallions.length > 0 && (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {stallions.slice(0, 3).map((s, i) => (<Reveal key={s.id} delay={(i % 3) * 70}><StallionCard stallion={s} /></Reveal>))}
           </div>
+          )}
         </div>
       </section>
     </>

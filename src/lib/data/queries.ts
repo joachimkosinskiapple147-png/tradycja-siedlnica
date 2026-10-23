@@ -3,6 +3,7 @@ import { seedStallions } from './stallions';
 import { seedLegends } from './legends';
 import type { Rider, Stallion, Legend } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import type { Album, AboutContent, EventItem, HomeContent, Horse, Offer, SiteSettings, TimelineEntry } from '@/lib/types';
 import {
@@ -140,7 +141,9 @@ function applyHorseFilters(list: Horse[], f: HorseFilters): Horse[] {
 export async function getHorses(filters: HorseFilters = {}): Promise<Horse[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      // Odczyt publiczny nie wymaga sesji (działa też podczas builda);
+      // sesyjny klient tylko do podglądu szkiców w panelu.
+      const supabase = filters.includeUnpublished ? createClient() : createPublicClient();
       let query = supabase.from('horses').select(HORSE_SELECT);
       if (!filters.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
@@ -172,7 +175,7 @@ export async function getFeaturedHorses(limit = 6, ids?: string[]): Promise<Hors
 export async function getHorseBySlug(slug: string): Promise<Horse | null> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = createPublicClient();
       const { data, error } = await supabase
         .from('horses')
         .select(HORSE_SELECT)
@@ -270,14 +273,14 @@ function mapEventRow(row: any): EventItem {
 export async function getEvents(opts: { includeUnpublished?: boolean } = {}): Promise<EventItem[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = opts.includeUnpublished ? createClient() : createPublicClient();
       let query = supabase.from('events').select(EVENT_SELECT);
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('date', { ascending: false });
       if (error) throw error;
-      const mapped = (data ?? []).map(mapEventRow);
-      // event_horses.horse_id trzeba zamienić na slug
-      const allHorses = await getHorses({ includeUnpublished: true });
+      const mapped: EventItem[] = ((data ?? []) as any[]).map(mapEventRow);
+      // event_horses.horse_id trzeba zamienić na slug (ten sam poziom dostępu, bez sesji na buildzie)
+      const allHorses = await getHorses(opts.includeUnpublished ? { includeUnpublished: true } : {});
       const byId = new Map(allHorses.map((h) => [h.id, h.slug]));
       return mapped.map((e) => ({ ...e, horse_slugs: e.horse_slugs.map((id) => byId.get(id) ?? id).filter(Boolean) }));
     } catch (e) {
@@ -293,7 +296,7 @@ export async function getPastEvents(): Promise<EventItem[]> {
   return (await getEvents()).filter((e) => !isUpcoming(e.date)).sort((a, b) => b.date.localeCompare(a.date));
 }
 export async function getEventBySlug(slug: string): Promise<EventItem | null> {
-  const all = await getEvents({ includeUnpublished: true });
+  const all = await getEvents();
   return all.find((e) => e.slug === slug) ?? null;
 }
 export async function getEventById(id: string): Promise<EventItem | null> {
@@ -341,7 +344,7 @@ function mapAlbumRow(row: any): Album {
 export async function getAlbums(opts: { includeUnpublished?: boolean } = {}): Promise<Album[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = opts.includeUnpublished ? createClient() : createPublicClient();
       let query = supabase.from('albums').select(ALBUM_SELECT);
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
@@ -355,7 +358,7 @@ export async function getAlbums(opts: { includeUnpublished?: boolean } = {}): Pr
   return [...list].sort((a, b) => a.position - b.position);
 }
 export async function getAlbumBySlug(slug: string): Promise<Album | null> {
-  const all = await getAlbums({ includeUnpublished: true });
+  const all = await getAlbums();
   return all.find((a) => a.slug === slug) ?? null;
 }
 export async function getAlbumById(id: string): Promise<Album | null> {
@@ -394,7 +397,7 @@ function mapOfferRow(row: any): Offer {
 export async function getOffers(opts: { includeInactive?: boolean } = {}): Promise<Offer[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = opts.includeInactive ? createClient() : createPublicClient();
       let query = supabase.from('offers').select('*');
       if (!opts.includeInactive) query = query.eq('active', true);
       const { data, error } = await query.order('position', { ascending: true });
@@ -408,7 +411,7 @@ export async function getOffers(opts: { includeInactive?: boolean } = {}): Promi
   return [...list].sort((a, b) => a.position - b.position);
 }
 export async function getOfferBySlug(slug: string): Promise<Offer | null> {
-  const all = await getOffers({ includeInactive: true });
+  const all = await getOffers();
   return all.find((o) => o.slug === slug) ?? null;
 }
 export async function getOfferById(id: string): Promise<Offer | null> {
@@ -441,7 +444,7 @@ function mapTimelineRow(row: any): TimelineEntry {
 export async function getTimeline(): Promise<TimelineEntry[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = createPublicClient();
       const { data, error } = await supabase.from('timeline_entries').select('*').order('position', { ascending: true });
       if (error) throw error;
       if (data && data.length) return data.map(mapTimelineRow);
@@ -471,7 +474,7 @@ export async function getTimelineEntryById(id: string): Promise<TimelineEntry | 
 export async function getHomeContent(): Promise<HomeContent> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = createPublicClient();
       const { data, error } = await supabase.from('page_content').select('value').eq('key', 'home').maybeSingle();
       if (error) throw error;
       return mergeHomeContent(data?.value ?? null);
@@ -485,7 +488,7 @@ export async function getHomeContent(): Promise<HomeContent> {
 export async function getAboutContent(): Promise<AboutContent> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = createPublicClient();
       const { data, error } = await supabase.from('page_content').select('value').eq('key', 'about').maybeSingle();
       if (error) throw error;
       return mergeAboutContent(data?.value ?? null);
@@ -499,7 +502,7 @@ export async function getAboutContent(): Promise<AboutContent> {
 export async function getSiteSettings(): Promise<SiteSettings> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = createPublicClient();
       const { data, error } = await supabase.from('site_settings').select('value').eq('key', 'general').maybeSingle();
       if (error) throw error;
       return mergeSiteSettings(data?.value ?? null);
@@ -607,19 +610,22 @@ function mapRiderRow(row: any): Rider {
 export async function getRiders(opts: { includeUnpublished?: boolean } = {}): Promise<Rider[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = opts.includeUnpublished ? createClient() : createPublicClient();
       let query = supabase.from('riders').select('*');
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      if (data && data.length) return data.map(mapRiderRow);
+      // Sukces zapytania = prawda z bazy, nawet gdy tabela jest pusta.
+      // Zwrócenie tu danych przykładowych pokazywałoby w panelu obce wiersze,
+      // których nie da się edytować ani usunąć (404 w getRiderById).
+      return (data ?? []).map(mapRiderRow);
     } catch (e) { console.error('[queries.getRiders] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedRiders : seedRiders.filter((r) => r.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
 export async function getRiderBySlug(slug: string): Promise<Rider | null> {
-  const all = await getRiders({ includeUnpublished: true });
+  const all = await getRiders();
   return all.find((r) => r.slug === slug) ?? null;
 }
 export async function getRiderById(id: string): Promise<Rider | null> {
@@ -673,19 +679,20 @@ function mapStallionRow(row: any): Stallion {
 export async function getStallions(opts: { includeUnpublished?: boolean } = {}): Promise<Stallion[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = opts.includeUnpublished ? createClient() : createPublicClient();
       let query = supabase.from('stallions').select('*');
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      if (data && data.length) return data.map(mapStallionRow);
+      // Sukces zapytania = prawda z bazy, nawet gdy tabela jest pusta (patrz getRiders).
+      return (data ?? []).map(mapStallionRow);
     } catch (e) { console.error('[queries.getStallions] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedStallions : seedStallions.filter((s) => s.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
 export async function getStallionBySlug(slug: string): Promise<Stallion | null> {
-  const all = await getStallions({ includeUnpublished: true });
+  const all = await getStallions();
   return all.find((s) => s.slug === slug) ?? null;
 }
 export async function getStallionById(id: string): Promise<Stallion | null> {
@@ -725,19 +732,20 @@ function mapLegendRow(row: any): Legend {
 export async function getLegends(opts: { includeUnpublished?: boolean } = {}): Promise<Legend[]> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = opts.includeUnpublished ? createClient() : createPublicClient();
       let query = supabase.from('legends').select('*');
       if (!opts.includeUnpublished) query = query.eq('publish', 'opublikowany');
       const { data, error } = await query.order('position', { ascending: true });
       if (error) throw error;
-      if (data && data.length) return data.map(mapLegendRow);
+      // Sukces zapytania = prawda z bazy, nawet gdy tabela jest pusta (patrz getRiders).
+      return (data ?? []).map(mapLegendRow);
     } catch (e) { console.error('[queries.getLegends] fallback:', e); }
   }
   const list = opts.includeUnpublished ? seedLegends : seedLegends.filter((l) => l.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
 export async function getLegendBySlug(slug: string): Promise<Legend | null> {
-  const all = await getLegends({ includeUnpublished: true });
+  const all = await getLegends();
   return all.find((l) => l.slug === slug) ?? null;
 }
 export async function getLegendById(id: string): Promise<Legend | null> {

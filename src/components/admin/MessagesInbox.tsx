@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { AdminMessage } from '@/lib/data/queries';
 import { formatDatePl, cn } from '@/lib/utils';
 import { setMessageStatus, saveMessageNote, deleteMessage } from '@/actions/admin';
@@ -14,6 +15,7 @@ const STATUSES: { value: string; label: string; cls: string }[] = [
 export default function MessagesInbox({ messages }: { messages: AdminMessage[] }) {
   const [openId, setOpenId] = useState<string | null>(messages[0]?.id ?? null);
   const [, start] = useTransition();
+  const router = useRouter();
   const [notes, setNotes] = useState<Record<string, string>>(
     Object.fromEntries(messages.map((m) => [m.id, m.note ?? '']))
   );
@@ -91,7 +93,7 @@ export default function MessagesInbox({ messages }: { messages: AdminMessage[] }
                     <button
                       key={s.value}
                       type="button"
-                      onClick={() => start(() => setMessageStatus(m.id, s.value))}
+                      onClick={() => start(async () => { await setMessageStatus(m.id, s.value); router.refresh(); })}
                       className={cn(
                         'rounded-sm border px-3 py-1.5 text-[0.72rem]',
                         m.status === s.value ? 'border-navy bg-navy text-ivory' : 'border-navy/20 text-navy hover:bg-cream'
@@ -106,7 +108,7 @@ export default function MessagesInbox({ messages }: { messages: AdminMessage[] }
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm('Usunąć tę wiadomość?')) start(() => deleteMessage(m.id));
+                      if (confirm('Usunąć tę wiadomość?')) start(async () => { await deleteMessage(m.id); router.refresh(); });
                     }}
                     className="rounded-sm border border-red-300 px-3 py-1.5 text-[0.72rem] text-red-600 hover:bg-red-50"
                   >

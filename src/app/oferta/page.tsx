@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getOffers, getSiteSettings } from '@/lib/data/queries';
 import { buildMetadata } from '@/lib/seo';
-import { PageHero } from '@/components/ui/Primitives';
+import { PageHero, EmptyState } from '@/components/ui/Primitives';
 import Reveal from '@/components/ui/Reveal';
 
 export const metadata = buildMetadata({
@@ -30,6 +30,13 @@ export default async function OfferPage() {
 
       <section className="bg-ivory py-section">
         <div className="shell space-y-16 lg:space-y-24">
+          {offers.length === 0 && (
+            <EmptyState
+              title="Oferta już wkrótce"
+              message="Szczegóły naszych usług są w przygotowaniu. Zadzwoń lub napisz — opowiemy o treningu, pensjonacie i jazdach."
+              action={{ label: 'Kontakt', href: '/kontakt' }}
+            />
+          )}
           {offers.map((offer, i) => {
             const flip = i % 2 === 1;
             return (

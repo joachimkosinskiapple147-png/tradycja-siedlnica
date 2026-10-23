@@ -8,7 +8,7 @@ import { OfferCard } from '@/components/site/Cards';
 export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
-  const offers = await getOffers({ includeInactive: true });
+  const offers = await getOffers();
   return offers.map((o) => ({ slug: o.slug }));
 }
 

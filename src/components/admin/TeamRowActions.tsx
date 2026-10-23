@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export default function TeamRowActions({
@@ -17,6 +18,7 @@ export default function TeamRowActions({
 }) {
   const [pending, start] = useTransition();
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
 
   return (
     <div className={cn('flex items-center gap-2', (pending || busy) && 'opacity-50')}>
@@ -32,6 +34,7 @@ export default function TeamRowActions({
             start(async () => {
               await onDelete(id);
               setBusy(false);
+              router.refresh();
             });
           }
         }}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type { Album } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { deleteAlbum, quickSetAlbum } from '@/actions/gallery';
@@ -10,12 +11,14 @@ import { deleteAlbum, quickSetAlbum } from '@/actions/gallery';
 export default function AlbumAdminTable({ albums }: { albums: Album[] }) {
   const [pending, start] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const router = useRouter();
 
   const run = (id: string, fn: () => Promise<void>) => {
     setBusyId(id);
     start(async () => {
       await fn();
       setBusyId(null);
+      router.refresh();
     });
   };
 

@@ -9,7 +9,7 @@ import HorseCard from '@/components/site/HorseCard';
 export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
-  const riders = await getRiders({ includeUnpublished: true });
+  const riders = await getRiders();
   return riders.map((r) => ({ slug: r.slug }));
 }
 

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type { Horse } from '@/lib/types';
 import { HORSE_STATUS, SEX_LABEL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -11,12 +12,14 @@ import { deleteHorse, quickSetHorse } from '@/actions/admin';
 export default function HorseAdminTable({ horses }: { horses: Horse[] }) {
   const [pending, start] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const router = useRouter();
 
   const run = (id: string, fn: () => Promise<void>) => {
     setBusyId(id);
     start(async () => {
       await fn();
       setBusyId(null);
+      router.refresh();
     });
   };
 

@@ -8,7 +8,7 @@ import { Breadcrumbs } from '@/components/ui/Primitives';
 export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
-  const list = await getLegends({ includeUnpublished: true });
+  const list = await getLegends();
   return list.map((l) => ({ slug: l.slug }));
 }
 

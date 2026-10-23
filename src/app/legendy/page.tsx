@@ -1,6 +1,6 @@
 import { getLegends } from '@/lib/data/queries';
 import { buildMetadata } from '@/lib/seo';
-import { PageHero } from '@/components/ui/Primitives';
+import { PageHero, EmptyState } from '@/components/ui/Primitives';
 import LegendCard from '@/components/site/LegendCard';
 import Reveal from '@/components/ui/Reveal';
 
@@ -19,6 +19,13 @@ export default async function LegendsPage() {
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {list.map((l, i) => (<Reveal key={l.id} delay={(i % 3) * 70}><LegendCard legend={l} /></Reveal>))}
           </div>
+          {list.length === 0 && (
+            <EmptyState
+              title="Legendy już wkrótce"
+              message="Historie koni wyhodowanych w naszej stajni są w przygotowaniu. Zajrzyj tu ponownie wkrótce."
+              action={{ label: 'Poznaj stajnię', href: '/nasza-stajnia' }}
+            />
+          )}
         </div>
       </section>
     </>
