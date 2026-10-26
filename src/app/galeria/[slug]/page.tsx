@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getAlbumBySlug } from '@/lib/data/queries';
+import { isAdmin } from '@/lib/supabase/admin';
+import PreviewBanner from '@/components/admin/PreviewBanner';
 import { buildMetadata } from '@/lib/seo';
 import { formatDatePl } from '@/lib/utils';
 import { Breadcrumbs } from '@/components/ui/Primitives';
@@ -20,11 +22,20 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function AlbumPage({ params }: { params: { slug: string } }) {
-  const album = await getAlbumBySlug(params.slug);
-  if (!album || album.publish !== 'opublikowany') notFound();
+  let album = await getAlbumBySlug(params.slug);
+  let preview = false;
+  if ((!album || album.publish !== 'opublikowany') && (await isAdmin())) {
+    const p = await getAlbumBySlug(params.slug, { preview: true });
+    if (p) {
+      album = p;
+      preview = true;
+    }
+  }
+  if (!album || (!preview && album.publish !== 'opublikowany')) notFound();
 
   return (
     <article className="bg-ivory pt-[76px]">
+      {preview && <PreviewBanner editHref={`/admin/galeria/${album.id}`} label={`Szkic „${album.title}”`} />}
       <div className="border-b border-navy/10 bg-cream">
         <div className="shell py-8">
           <Breadcrumbs items={[{ name: 'Galeria', path: '/galeria' }, { name: album.title, path: `/galeria/${album.slug}` }]} />

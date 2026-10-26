@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AdminChrome, { AdminHeader } from '@/components/admin/AdminChrome';
 import LegendForm from '@/components/admin/LegendForm';
+import { requireAdmin } from '@/lib/supabase/admin';
 import { getLegendById } from '@/lib/data/queries';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditLegendPage({ params }: { params: { id: string } }) {
+  await requireAdmin();
   const legend = await getLegendById(params.id);
   if (!legend) notFound();
 

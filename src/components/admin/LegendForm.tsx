@@ -111,7 +111,7 @@ export default function LegendForm({ legend }: { legend?: Legend }) {
           <div className="sticky top-6 space-y-6">
             <Section title="Publikacja">
               <L label="Status publikacji">
-                <select name="publish" defaultValue={legend?.publish ?? 'opublikowany'} className={inputCls}>
+                <select name="publish" defaultValue={legend?.publish ?? 'szkic'} className={inputCls}>
                   <option value="szkic">Szkic (ukryty)</option>
                   <option value="opublikowany">Opublikowany</option>
                   <option value="ukryty">Ukryty</option>

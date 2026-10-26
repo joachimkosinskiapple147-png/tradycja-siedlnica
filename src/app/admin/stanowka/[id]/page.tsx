@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AdminChrome, { AdminHeader } from '@/components/admin/AdminChrome';
 import StallionForm from '@/components/admin/StallionForm';
+import { requireAdmin } from '@/lib/supabase/admin';
 import { getStallionById } from '@/lib/data/queries';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditStallionPage({ params }: { params: { id: string } }) {
+  await requireAdmin();
   const stallion = await getStallionById(params.id);
   if (!stallion) notFound();
 

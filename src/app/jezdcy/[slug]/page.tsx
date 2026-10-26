@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getRiders, getRiderBySlug, getHorses } from '@/lib/data/queries';
+import { isAdmin } from '@/lib/supabase/admin';
+import PreviewBanner from '@/components/admin/PreviewBanner';
 import { buildMetadata } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/ui/Primitives';
 import HorseCard from '@/components/site/HorseCard';
@@ -20,12 +22,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function RiderPage({ params }: { params: { slug: string } }) {
-  const rider = await getRiderBySlug(params.slug);
-  if (!rider || rider.publish !== 'opublikowany') notFound();
+  let rider = await getRiderBySlug(params.slug);
+  let preview = false;
+  if ((!rider || rider.publish !== 'opublikowany') && (await isAdmin())) {
+    const p = await getRiderBySlug(params.slug, { preview: true });
+    if (p) {
+      rider = p;
+      preview = true;
+    }
+  }
+  if (!rider || (!preview && rider.publish !== 'opublikowany')) notFound();
   const all = await getHorses();
   const mine = all.filter((h) => rider.horse_slugs.includes(h.slug));
   return (
     <>
+      {preview && <PreviewBanner editHref={`/admin/jezdcy/${rider.id}`} label={`Szkic „${rider.name}”`} />}
       <section className="relative flex min-h-[46vh] items-end overflow-hidden bg-navy pt-[68px]">
         <Image src={rider.image.url} alt={rider.image.alt} fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-photo-scrim" aria-hidden="true" />

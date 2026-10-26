@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getOfferById } from '@/lib/data/queries';
+import { requireAdmin } from '@/lib/supabase/admin';
 import AdminChrome, { AdminHeader } from '@/components/admin/AdminChrome';
 import OfferForm from '@/components/admin/OfferForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditOfferPage({ params }: { params: { id: string } }) {
+  await requireAdmin();
   const offer = await getOfferById(params.id);
   if (!offer) notFound();
 

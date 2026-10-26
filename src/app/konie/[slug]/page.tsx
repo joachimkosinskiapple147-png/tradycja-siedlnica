@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { getHorseBySlug, getSimilarHorses, getSiteSettings } from '@/lib/data/queries';
+import { isAdmin } from '@/lib/supabase/admin';
+import PreviewBanner from '@/components/admin/PreviewBanner';
 import { SEX_LABEL } from '@/lib/constants';
 import { buildMetadata } from '@/lib/seo';
 import { ageFromYear, formatDatePl } from '@/lib/utils';
@@ -41,8 +43,18 @@ function Spec({ label, value }: { label: string; value?: string | number | null 
 }
 
 export default async function HorsePage({ params }: { params: { slug: string } }) {
-  const horse = await getHorseBySlug(params.slug);
-  if (!horse || horse.publish !== 'opublikowany') notFound();
+  let horse = await getHorseBySlug(params.slug);
+  // Podgląd roboczy dla administratora: szkic też da się obejrzeć (z bannerem).
+  // Gość bez sesji admina widzi tu nadal 404 — tak jak dotychczas.
+  let preview = false;
+  if ((!horse || horse.publish !== 'opublikowany') && (await isAdmin())) {
+    const p = await getHorseBySlug(params.slug, { preview: true });
+    if (p) {
+      horse = p;
+      preview = true;
+    }
+  }
+  if (!horse || (!preview && horse.publish !== 'opublikowany')) notFound();
 
   const similar = await getSimilarHorses(horse, 3);
   const settings = await getSiteSettings();
@@ -71,6 +83,7 @@ export default async function HorsePage({ params }: { params: { slug: string } }
 
   return (
     <>
+      {preview && <PreviewBanner editHref={`/admin/konie/${horse.id}`} label={`Szkic „${horse.name}”`} />}
       {/* HERO profilu */}
       <section className="relative flex min-h-[52vh] items-end overflow-hidden bg-navy pt-[68px]">
         {cover && <Image src={cover.url} alt={cover.alt || horse.name} fill priority sizes="100vw" className="object-cover" />}

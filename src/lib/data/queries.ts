@@ -154,7 +154,12 @@ export async function getHorses(filters: HorseFilters = {}): Promise<Horse[]> {
         filters.includeUnpublished ? true : h.publish === 'opublikowany'
       );
     } catch (e) {
-      console.error('[queries.getHorses] fallback na dane przykładowe:', e);
+      // Baza skonfigurowana = prawda z bazy, nigdy dane przykładowe.
+      // Zwrócenie seedów pokazywałoby w panelu obce wiersze, których nie da
+      // się edytować ani usunąć (404 w getHorseById). Przy błędzie zwracamy
+      // pustą listę, a błąd logujemy.
+      console.error('[queries.getHorses] błąd bazy, zwracam pustą listę:', e);
+      return [];
     }
   }
   return applyHorseFilters(seedHorses, filters);
@@ -172,10 +177,12 @@ export async function getFeaturedHorses(limit = 6, ids?: string[]): Promise<Hors
   return base.slice(0, limit);
 }
 
-export async function getHorseBySlug(slug: string): Promise<Horse | null> {
+export async function getHorseBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<Horse | null> {
   if (isSupabaseConfigured) {
     try {
-      const supabase = createPublicClient();
+      // preview = podgląd szkicu przez administratora (klient z sesją);
+      // gość zawsze czyta klientem publicznym (tylko opublikowane).
+      const supabase = opts.preview ? createClient() : createPublicClient();
       const { data, error } = await supabase
         .from('horses')
         .select(HORSE_SELECT)
@@ -185,7 +192,11 @@ export async function getHorseBySlug(slug: string): Promise<Horse | null> {
       if (data) return mapHorseRow(data);
       return null;
     } catch (e) {
-      console.error('[queries.getHorseBySlug] fallback:', e);
+      // Baza skonfigurowana = prawda z bazy. Zwrócenie seeda udawałoby
+      // istnienie strony, której nie ma (klik z panelu kończyłby się
+      // mylącym podglądem cudzego konia zamiast 404).
+      console.error('[queries.getHorseBySlug] błąd bazy:', e);
+      return null;
     }
   }
   return seedHorses.find((h) => h.slug === slug) ?? null;
@@ -284,7 +295,9 @@ export async function getEvents(opts: { includeUnpublished?: boolean } = {}): Pr
       const byId = new Map(allHorses.map((h) => [h.id, h.slug]));
       return mapped.map((e) => ({ ...e, horse_slugs: e.horse_slugs.map((id) => byId.get(id) ?? id).filter(Boolean) }));
     } catch (e) {
-      console.error('[queries.getEvents] fallback:', e);
+      // Baza skonfigurowana = prawda z bazy, nigdy seedy (patrz getHorses).
+      console.error('[queries.getEvents] błąd bazy, zwracam pustą listę:', e);
+      return [];
     }
   }
   return opts.includeUnpublished ? seedEvents : seedEvents.filter((e) => e.publish === 'opublikowany');
@@ -295,8 +308,8 @@ export async function getUpcomingEvents(): Promise<EventItem[]> {
 export async function getPastEvents(): Promise<EventItem[]> {
   return (await getEvents()).filter((e) => !isUpcoming(e.date)).sort((a, b) => b.date.localeCompare(a.date));
 }
-export async function getEventBySlug(slug: string): Promise<EventItem | null> {
-  const all = await getEvents();
+export async function getEventBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<EventItem | null> {
+  const all = await getEvents(opts.preview ? { includeUnpublished: true } : {});
   return all.find((e) => e.slug === slug) ?? null;
 }
 export async function getEventById(id: string): Promise<EventItem | null> {
@@ -351,14 +364,16 @@ export async function getAlbums(opts: { includeUnpublished?: boolean } = {}): Pr
       if (error) throw error;
       return (data ?? []).map(mapAlbumRow);
     } catch (e) {
-      console.error('[queries.getAlbums] fallback:', e);
+      // Baza skonfigurowana = prawda z bazy, nigdy seedy (patrz getHorses).
+      console.error('[queries.getAlbums] błąd bazy, zwracam pustą listę:', e);
+      return [];
     }
   }
   const list = opts.includeUnpublished ? seedAlbums : seedAlbums.filter((a) => a.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
-export async function getAlbumBySlug(slug: string): Promise<Album | null> {
-  const all = await getAlbums();
+export async function getAlbumBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<Album | null> {
+  const all = await getAlbums(opts.preview ? { includeUnpublished: true } : {});
   return all.find((a) => a.slug === slug) ?? null;
 }
 export async function getAlbumById(id: string): Promise<Album | null> {
@@ -404,14 +419,16 @@ export async function getOffers(opts: { includeInactive?: boolean } = {}): Promi
       if (error) throw error;
       return (data ?? []).map(mapOfferRow);
     } catch (e) {
-      console.error('[queries.getOffers] fallback:', e);
+      // Baza skonfigurowana = prawda z bazy, nigdy seedy (patrz getHorses).
+      console.error('[queries.getOffers] błąd bazy, zwracam pustą listę:', e);
+      return [];
     }
   }
   const list = opts.includeInactive ? seedOffers : seedOffers.filter((o) => o.active);
   return [...list].sort((a, b) => a.position - b.position);
 }
-export async function getOfferBySlug(slug: string): Promise<Offer | null> {
-  const all = await getOffers();
+export async function getOfferBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<Offer | null> {
+  const all = await getOffers(opts.preview ? { includeInactive: true } : {});
   return all.find((o) => o.slug === slug) ?? null;
 }
 export async function getOfferById(id: string): Promise<Offer | null> {
@@ -624,8 +641,8 @@ export async function getRiders(opts: { includeUnpublished?: boolean } = {}): Pr
   const list = opts.includeUnpublished ? seedRiders : seedRiders.filter((r) => r.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
-export async function getRiderBySlug(slug: string): Promise<Rider | null> {
-  const all = await getRiders();
+export async function getRiderBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<Rider | null> {
+  const all = await getRiders(opts.preview ? { includeUnpublished: true } : {});
   return all.find((r) => r.slug === slug) ?? null;
 }
 export async function getRiderById(id: string): Promise<Rider | null> {
@@ -691,8 +708,8 @@ export async function getStallions(opts: { includeUnpublished?: boolean } = {}):
   const list = opts.includeUnpublished ? seedStallions : seedStallions.filter((s) => s.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
-export async function getStallionBySlug(slug: string): Promise<Stallion | null> {
-  const all = await getStallions();
+export async function getStallionBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<Stallion | null> {
+  const all = await getStallions(opts.preview ? { includeUnpublished: true } : {});
   return all.find((s) => s.slug === slug) ?? null;
 }
 export async function getStallionById(id: string): Promise<Stallion | null> {
@@ -744,8 +761,8 @@ export async function getLegends(opts: { includeUnpublished?: boolean } = {}): P
   const list = opts.includeUnpublished ? seedLegends : seedLegends.filter((l) => l.publish === 'opublikowany');
   return [...list].sort((a, b) => a.position - b.position);
 }
-export async function getLegendBySlug(slug: string): Promise<Legend | null> {
-  const all = await getLegends();
+export async function getLegendBySlug(slug: string, opts: { preview?: boolean } = {}): Promise<Legend | null> {
+  const all = await getLegends(opts.preview ? { includeUnpublished: true } : {});
   return all.find((l) => l.slug === slug) ?? null;
 }
 export async function getLegendById(id: string): Promise<Legend | null> {

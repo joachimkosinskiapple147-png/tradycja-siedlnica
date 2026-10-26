@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAlbumById } from '@/lib/data/queries';
+import { requireAdmin } from '@/lib/supabase/admin';
 import AdminChrome, { AdminHeader } from '@/components/admin/AdminChrome';
 import AlbumForm from '@/components/admin/AlbumForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditAlbumPage({ params }: { params: { id: string } }) {
+  await requireAdmin();
   const album = await getAlbumById(params.id);
   if (!album) notFound();
 

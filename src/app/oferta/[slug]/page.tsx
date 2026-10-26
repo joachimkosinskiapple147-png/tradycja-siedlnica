@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getOffers, getOfferBySlug, getSiteSettings } from '@/lib/data/queries';
+import { isAdmin } from '@/lib/supabase/admin';
+import PreviewBanner from '@/components/admin/PreviewBanner';
 import { buildMetadata } from '@/lib/seo';
 import { PageHero } from '@/components/ui/Primitives';
 import { OfferCard } from '@/components/site/Cards';
@@ -19,12 +21,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function OfferPage({ params }: { params: { slug: string } }) {
-  const offer = await getOfferBySlug(params.slug);
-  if (!offer || !offer.active) notFound();
+  let offer = await getOfferBySlug(params.slug);
+  let preview = false;
+  if ((!offer || !offer.active) && (await isAdmin())) {
+    const p = await getOfferBySlug(params.slug, { preview: true });
+    if (p) {
+      offer = p;
+      preview = true;
+    }
+  }
+  if (!offer || (!preview && !offer.active)) notFound();
   const settings = await getSiteSettings();
   const others = (await getOffers()).filter((o) => o.slug !== offer.slug).slice(0, 3);
   return (
     <>
+      {preview && <PreviewBanner editHref={`/admin/oferta/${offer.id}`} label={`Szkic „${offer.title}”`} />}
       <PageHero eyebrow="Oferta" title={offer.title} intro={offer.excerpt}
         image={offer.image.url} imageAlt={offer.image.alt}
         crumbs={[{ name: 'Oferta', path: '/oferta' }, { name: offer.title, path: `/oferta/${offer.slug}` }]} />

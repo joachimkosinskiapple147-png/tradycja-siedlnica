@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getEventBySlug, getHorseBySlug } from '@/lib/data/queries';
+import { isAdmin } from '@/lib/supabase/admin';
+import PreviewBanner from '@/components/admin/PreviewBanner';
 import { buildMetadata, JsonLd, eventJsonLd } from '@/lib/seo';
 import { formatDatePl, isUpcoming } from '@/lib/utils';
 import { Breadcrumbs } from '@/components/ui/Primitives';
@@ -23,8 +25,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function EventPage({ params }: { params: { slug: string } }) {
-  const event = await getEventBySlug(params.slug);
-  if (!event || event.publish !== 'opublikowany') notFound();
+  let event = await getEventBySlug(params.slug);
+  let preview = false;
+  if ((!event || event.publish !== 'opublikowany') && (await isAdmin())) {
+    const p = await getEventBySlug(params.slug, { preview: true });
+    if (p) {
+      event = p;
+      preview = true;
+    }
+  }
+  if (!event || (!preview && event.publish !== 'opublikowany')) notFound();
 
   const horses = (
     await Promise.all(event.horse_slugs.map((s) => getHorseBySlug(s)))
@@ -32,6 +42,7 @@ export default async function EventPage({ params }: { params: { slug: string } }
 
   return (
     <article className="bg-ivory pt-[76px]">
+      {preview && <PreviewBanner editHref={`/admin/wydarzenia/${event.id}`} label={`Szkic „${event.title}”`} />}
       <div className="border-b border-navy/10 bg-cream">
         <div className="shell py-8">
           <Breadcrumbs items={[{ name: 'Wydarzenia', path: '/wydarzenia' }, { name: event.title, path: `/wydarzenia/${event.slug}` }]} />

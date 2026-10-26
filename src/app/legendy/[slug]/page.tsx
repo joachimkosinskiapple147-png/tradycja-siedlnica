@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getLegends, getLegendBySlug } from '@/lib/data/queries';
+import { isAdmin } from '@/lib/supabase/admin';
+import PreviewBanner from '@/components/admin/PreviewBanner';
 import { buildMetadata } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/ui/Primitives';
 
@@ -19,10 +21,19 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function LegendPage({ params }: { params: { slug: string } }) {
-  const l = await getLegendBySlug(params.slug);
-  if (!l || l.publish !== 'opublikowany') notFound();
+  let l = await getLegendBySlug(params.slug);
+  let preview = false;
+  if ((!l || l.publish !== 'opublikowany') && (await isAdmin())) {
+    const p = await getLegendBySlug(params.slug, { preview: true });
+    if (p) {
+      l = p;
+      preview = true;
+    }
+  }
+  if (!l || (!preview && l.publish !== 'opublikowany')) notFound();
   return (
     <>
+      {preview && <PreviewBanner editHref={`/admin/legendy/${l.id}`} label={`Szkic „${l.name}”`} />}
       <section className="relative flex min-h-[46vh] items-end overflow-hidden bg-navy pt-[68px]">
         <Image src={l.image.url} alt={l.image.alt} fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-photo-scrim" aria-hidden="true" />

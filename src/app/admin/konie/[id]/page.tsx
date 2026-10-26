@@ -1,12 +1,16 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getHorseById } from '@/lib/data/queries';
+import { requireAdmin } from '@/lib/supabase/admin';
 import AdminChrome, { AdminHeader } from '@/components/admin/AdminChrome';
 import HorseForm from '@/components/admin/HorseForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditHorsePage({ params }: { params: { id: string } }) {
+  // Najpierw bramka logowania (przekierowanie), dopiero potem odczyt —
+  // inaczej wygasła sesja kończyłaby się mylącym 404 zamiast loginem.
+  await requireAdmin();
   const horse = await getHorseById(params.id);
   if (!horse) notFound();
 
